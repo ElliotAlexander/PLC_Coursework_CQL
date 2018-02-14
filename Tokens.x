@@ -11,6 +11,9 @@ tokens :-
     $white+     ;
     "//".*      ;
     "#".*       ;
+    True        { tok (\p s -> TokenInt p 1)}
+    False       { tok (\p s -> TokenInt p -1)}
+    Negate      { tok (\p s -> TokenInt p -1)}
     &           { tok (\p s -> TokenAnd p) }
     =           { tok (\p s -> TokenEq p) }
     if          { tok (\p s -> TokenIf p) }
@@ -26,7 +29,7 @@ tokens :-
 
 tok f p s = f p s
 
-data Token = 
+data Token =
     TokenAnd AlexPosn |
     TokenEq AlexPosn |
     TokenIf AlexPosn |
