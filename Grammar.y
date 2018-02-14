@@ -10,6 +10,8 @@ import Tokens
 %error { parseError }
 %token
     and { TokenAnd AlexPosn }
+    if  { TokenIf AlexPosn }
+    is  { TokenIs AlexPosn }
     '=' { TokenEq AlexPosn }
     int { TokenInt AlexPosn $$ }
     var { TokenVar AlexPosn $$ }
