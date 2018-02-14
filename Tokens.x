@@ -14,6 +14,7 @@ tokens :-
     &           { tok (\p s -> TokenAnd p) }
     =           { tok (\p s -> TokenEq p) }
     if          { tok (\p s -> TokenIf p) }
+    else        { tok (\p s -> TokenElse p) }
     is          { tok (\p s -> TokenIs p) }
     \(          { tok (\p s -> TokenLBracket p) }
     \)          { tok (\p s -> TokenRBracket p) }
@@ -29,6 +30,7 @@ data Token =
     TokenAnd AlexPosn |
     TokenEq AlexPosn |
     TokenIf AlexPosn |
+    TokenElse AlexPosn |
     TokenIs AlexPosn |
     TokenLBracket AlexPosn |
     TokenRBracket AlexPosn |
