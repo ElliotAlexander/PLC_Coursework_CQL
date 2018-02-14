@@ -10,6 +10,9 @@ import Tokens
 %error { parseError }
 %token
     and { TokenAnd AlexPosn }
+    if  { TokenIf AlexPosn }
+    else { TokenElse AlexPosn }
+    is  { TokenIs AlexPosn }
     '=' { TokenEq AlexPosn }
     int { TokenInt AlexPosn $$ }
     var { TokenVar AlexPosn $$ }
@@ -19,12 +22,13 @@ import Tokens
     '(' { TokenLBracket AlexPosn }
     ')' { TokenRBracket AlexPosn }
 
-
-%right in
-%left '+' '-'
-%left '*' '/' '^'
-%left NEG
+%nonassoc '='
+%nonassoc and
+%right if else
+%left is
+%nonassoc '{' '}' '(' ')'
 %%
+
 Exp : let var '=' Exp in Exp { Let $2 $4 $6 }
     | Exp '+' Exp            { Plus $1 $3 }
     | Exp '-' Exp            { Minus $1 $3 }
