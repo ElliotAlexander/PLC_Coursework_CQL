@@ -29,7 +29,7 @@ import Tokens
     false   { TokenFalse _}
 
 %nonassoc '='
-%nonassoc and
+%left and or xor
 %right if else
 %left is
 %nonassoc '{' '}' '(' ')'
@@ -47,7 +47,7 @@ Pred : Pred and Pred { And $1 $3 }
      | var '=' int { EqVarInt $1 $3}
      | var '=' var { EqVarVar $1 $3}
      | int '=' int { EqIntInt $1 $3}
-     | int '=' var { EqIntVar $1 $3}
+     | int '=' var { EqVarInt $3 $1}
      | true { PredTrue }
      | false { PredFalse }
 
@@ -61,7 +61,6 @@ data Pred = And Pred Pred
         | EqVarInt String Int
         | EqVarVar String String
         | EqIntInt Int Int
-        | EqIntVar Int String
         | PredTrue
         | PredFalse
         deriving Show
