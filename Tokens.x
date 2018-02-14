@@ -11,8 +11,8 @@ tokens :-
     $white+     ;
     "//".*      ;
     "#".*       ;
-    True        { tok (\p s -> TokenInt p 1)}
-    False       { tok (\p s -> TokenInt p -1)}
+    \|          { tok (\p s -> TokenOr)}
+    \|*          { tok (\p s -> TokenXOR)}
     Negate      { tok (\p s -> TokenInt p -1)}
     &           { tok (\p s -> TokenAnd p) }
     =           { tok (\p s -> TokenEq p) }
@@ -38,6 +38,8 @@ data Token =
     TokenLCurly AlexPosn |
     TokenRCurly AlexPosn |
     TokenInt AlexPosn Int |
-    TokenVar AlexPosn String
+    TokenVar AlexPosn String |
+    TokenOr AlexPosn |
+    TokenXOR AlexPosn |
     deriving Show
 }

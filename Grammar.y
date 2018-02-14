@@ -48,8 +48,6 @@ data Exp = Let String Exp Exp
          | IfElse Exp Exp Else Exp
          | If Exp Exp
          | Is String Int
-
-         | Expo Exp Exp
          | Int Int
          | Var String
          deriving Show
