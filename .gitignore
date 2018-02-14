@@ -20,3 +20,5 @@ cabal.project.local
 .HTF/
 
 Tokens\.hs
+
+Grammar\.hs

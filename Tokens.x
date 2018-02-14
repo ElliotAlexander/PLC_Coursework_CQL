@@ -11,14 +11,16 @@ tokens :-
     $white+     ;
     "//".*      ;
     "#".*       ;
-    \|          { tok (\p s -> TokenOr)}
-    \|*          { tok (\p s -> TokenXOR)}
-    Negate      { tok (\p s -> TokenInt p -1)}
-    &           { tok (\p s -> TokenAnd p) }
+    \|          { tok (\p s -> TokenOr p)}
+    \|\*          { tok (\p s -> TokenXor p)}
+    and          { tok (\p s -> TokenAnd p) }
+    return         { tok (\p s -> TokenReturn p) }
     =           { tok (\p s -> TokenEq p) }
     if          { tok (\p s -> TokenIf p) }
     else        { tok (\p s -> TokenElse p) }
     is          { tok (\p s -> TokenIs p) }
+    true        { tok (\p s -> TokenTrue p)}
+    false       { tok (\p s -> TokenFalse p)}
     \(          { tok (\p s -> TokenLBracket p) }
     \)          { tok (\p s -> TokenRBracket p) }
     \{          { tok (\p s -> TokenLCurly p) }
@@ -42,6 +44,9 @@ data Token =
     TokenInt AlexPosn Int |
     TokenVar AlexPosn String |
     TokenOr AlexPosn |
-    TokenXOR AlexPosn |
+    TokenXor AlexPosn |
+    TokenReturn AlexPosn |
+    TokenTrue AlexPosn |
+    TokenFalse AlexPosn
     deriving Show
 }
