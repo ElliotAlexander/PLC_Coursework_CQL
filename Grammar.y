@@ -25,8 +25,8 @@ import Tokens
     '('    { TokenLBracket _ }
     ')'    { TokenRBracket _ }
     return { TokenReturn _ }
-    true   { TokenTrue _}
-    false   { TokenFalse _}
+    true   { TokenTrue _ }
+    false   { TokenFalse _ }
 
 %nonassoc '='
 %left and or xor
@@ -35,10 +35,11 @@ import Tokens
 %nonassoc '{' '}' '(' ')'
 %%
 
-Exp : var is int Exp                        { VarInt $1 $3 $4 }
-    | var is var Exp                        { VarVar $1 $3 $4 }
-    | if '(' Pred ')' '{' Exp '}' else '{' Exp '}' Exp  { IfElse $3 $6 $10 $12}
-    | if '(' Pred ')' '{' Exp '}' Exp                      { If $3 $6 $8 }
+Exp : var is int Exp                                    { VarInt $1 $3 $4 }
+    | var is var Exp                                    { VarVar $1 $3 $4 }
+    | var is '(' Args ')' '{' Exp '}' Exp               { Func $1 $4 $7 $9 }
+    | if '(' Pred ')' '{' Exp '}' else '{' Exp '}' Exp  { IfElse $3 $6 $10 $12 }
+    | if '(' Pred ')' '{' Exp '}' Exp                   { If $3 $6 $8 }
     | return { Return }
 
 Pred : Pred and Pred { And $1 $3 }
@@ -51,9 +52,15 @@ Pred : Pred and Pred { And $1 $3 }
      | true { PredTrue }
      | false { PredFalse }
 
+Args : var { ArgEnd $1}
+     | var Args { Arg $1 $2}
 {
 parseError :: [Token] -> a
 parseError _ = error "Parse error"
+
+data Args = ArgEnd String
+        | Arg String Args
+        deriving Show
 
 data Pred = And Pred Pred
         | Or Pred Pred
@@ -69,6 +76,7 @@ data Exp = VarInt String Int Exp
         | VarVar String String Exp
         | IfElse Pred Exp Exp Exp
         | If Pred Exp Exp
+        | Func String Args Exp Exp
         | Return
         deriving Show
 }
