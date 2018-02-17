@@ -14,7 +14,7 @@ tokens :-
     \|          { tok (\p s -> TokenOr p)}
     \|\*        { tok (\p s -> TokenXor p)}
     and         { tok (\p s -> TokenAnd p) }
-    return      { tok (\p s -> TokenReturn p) }
+    \;          { tok (\p s -> TokenReturn p) }
     =           { tok (\p s -> TokenEq p) }
     if          { tok (\p s -> TokenIf p) }
     else        { tok (\p s -> TokenElse p) }
