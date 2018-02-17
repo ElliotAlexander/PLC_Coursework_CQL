@@ -35,12 +35,18 @@ import Tokens
 %nonassoc '{' '}' '(' ')'
 %%
 
+Func : var is '(' Args ')' '{' Exp '}' Func               { Function $1 $4 $7 $9 }
+     | var is '(' Args ')' '{' Exp '}'                   { FuncEnd $1 $4 $7 }
+
 Exp : var is int Exp                                    { VarInt $1 $3 $4 }
     | var is var Exp                                    { VarVar $1 $3 $4 }
-    | var is '(' Args ')' '{' Exp '}' Exp               { Func $1 $4 $7 $9 }
+    | var is Func Exp                                   { VarFunc $1 $3 $4 }
+    | var '(' Args ')' Exp                              { FuncCall $1 $3 $5 }                           
     | if '(' Pred ')' '{' Exp '}' else '{' Exp '}' Exp  { IfElse $3 $6 $10 $12 }
     | if '(' Pred ')' '{' Exp '}' Exp                   { If $3 $6 $8 }
     | return { Return }
+    | return var { ReturnVar $2}
+    | return int { ReturnInt $2}
 
 Pred : Pred and Pred { And $1 $3 }
      | Pred or Pred  { Or $1 $3}
@@ -58,6 +64,10 @@ Args : var { ArgEnd $1}
 parseError :: [Token] -> a
 parseError _ = error "Parse error"
 
+data Func = Function String Args Exp Func
+        | FuncEnd String Args Exp
+        deriving Show
+
 data Args = ArgEnd String
         | Arg String Args
         deriving Show
@@ -74,9 +84,12 @@ data Pred = And Pred Pred
 
 data Exp = VarInt String Int Exp
         | VarVar String String Exp
+        | VarFunc String Func Exp
         | IfElse Pred Exp Exp Exp
         | If Pred Exp Exp
-        | Func String Args Exp Exp
+        | FuncCall String Args Exp
         | Return
+        | ReturnVar String
+        | ReturnInt Int
         deriving Show
 }
