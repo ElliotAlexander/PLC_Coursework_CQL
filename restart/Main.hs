@@ -4,6 +4,7 @@ module Main where
     import Text.ParserCombinators.Parsec
     import Data.CSV
     import Data.Map
+    import Control.Monad
     
     --main method for no real reason
     main :: IO()
@@ -18,7 +19,9 @@ module Main where
     --not redefining this but just for reference
     --type FilePath = String
 
+    type CSV = [[String]]
     type VarToColumnMap = Map Int Int
+    type VarToAllValuesMap = Map Int [String]
     type VarToValueMap = Map Int String
     type DataSources = Map FilePath VarToColumnMap
     type Equalities = Map Int Int
@@ -44,8 +47,8 @@ module Main where
 
     --here we read the files and produce a list of possible maps of variables to string values
     --this also assumes no variables coming from two files
-    getMappings :: ExpressionData -> Mappings
-    getAllMappings (EData outs datasources equalities) = Mapping outs (datasourcesToMappings datasources) equalities
+    --getMappings :: ExpressionData -> Mappings
+    --getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
 
     --here we remove any mappings for which the equalities do not hold
     --filterMappings :: Mappings -> Mappings
@@ -56,6 +59,8 @@ module Main where
     --here we order the outputs lexicographically ;)
     --lexicographicalOrdering :: [[String]]
 
+    --AUXILIARY FUNCTIONS
+    --express
     numbersToList :: Numbers -> [Int]
     numbersToList (Number i next) = i : numbersToList next
     numbersToList (NumberEnd i) = [i]
@@ -68,33 +73,100 @@ module Main where
     sources' (PredSource file out) = singleton file out
     sources' (PredEq _ _) = empty
 
-    --sourcesToMapping
-
     equal :: Pred -> Map Int Int
     equal (PredAnd p1 p2) = union (equal p1) (equal p2)
     equal (PredSource file out) = empty
     equal (PredEq a b) = singleton a b
 
-    --getPotentialMappings :: String -> [Int] -> [[String]]
-    --getPotentialMappings fileName (x:xs) = do file <- parseFromFile csvFile $ fileName ++ ".csv"
-    --                                          possible <- fmap getIndex file x
-    --                                          return possible
+    --errorCheck
 
-    getAllMappings :: [Int] -> [[String]] -> [[String]]
-    getAllMappings [] _ = []
-    getAllMappings (x:xs) input = myzip (getIndex input x) (getAllMappings xs input)
+    --impliedEquals
 
-    myzip :: [a] -> [[a]] -> [[a]]
-    myzip xs [] = [[x] | x <- xs]
-    myzip [] _ = []
-    myzip (x:xs) ys = [x : y | y <- ys] ++ myzip xs ys
+    --getMappings
 
-    listLength :: Numbers -> Int
-    listLength (Number _ next) = 1 + listLength next
-    listLength (NumberEnd _) = 1
+    getSources (EData outs datasources equalities) = datasources
 
-    listOfColumns :: Numbers -> [Int]
-    listOfColumns x = [0..(listLength x - 1)]
+    --getMappings (EData outs datasources equalities) = datasourcesToMappings datasources
+    
+    --datasourcesToMappings :: DataSources -> Map FilePath (IO (Either ParseError [Map Int String]))
+    --datasourcesToMappings sources =  do splitByFile <- mapWithKey datasourceToMapping sources
+    --                                    let 
+    --                                   --let joined = fmap elems splitByFile
+    --                                   --return splitByFile
+
+    --datasourceToMapping :: FilePath -> VarToColumnMap -> IO (Either ParseError [VarToValueMap])
+    --datasourceToMapping file varToColumnMap = do contents <- parseFromFile csvFile (file ++ ".csv")
+    --                                             let mapping = fmap (genMapping varToColumnMap) contents
+    --                                             return mapping
+    
+    --DataSources -> Map FilePath (Map Int [String]) -> Map Int [String] -> [Map Int String]
+    --dataSourcesToMappings :: DataSources -> [VarToValueMap]
+    --dataSourcesToMappings sources = mapWithKey first sources
+
+    --please datasources = mapWithKey getColumnsFromFile datasources
+
+    --getColumnsFromFile file columns = Data.Map.map (getColumnFromFile file) columns
+
+    --getColumnFromFile file column = do contents <- parseFromFile csvFile (file ++ ".csv")
+    --                                   let columnValues = fmap (getColumn column) contents
+    --                                   return columnValues
+
+    --getColumns :: [Int] -> [[String]] -> [[String]]
+    --getColumns [] _ = []
+    --getColumns (x:xs) csv = [line !! x | line <- csv] : getColumns xs csv
+
+    --dataSourcesToMappings :: DataSources -> IO (Either ParseError VarToAllValuesMap)
+    dataSourcesToMappings datasources = fmap (liftM inter) $ fmap combineEitherMaps $ fmap elems $ traverseWithKey dataSourceToMapping datasources
+                                           --let result = fmap combineFiles whynot
+                                           --return whynot
+
+    dataSourceToMapping file vartocolumn = do contents <- parseFromFile csvFile $ file ++ ".csv"
+                                              let result = fmap (getColumns vartocolumn) contents
+                                              return result
+    
+    getColumns :: VarToColumnMap -> CSV -> VarToAllValuesMap
+    getColumns vartocolumn csv = Data.Map.map (\col -> [line !! col | line <-csv]) vartocolumn
+
+    combineEitherMaps :: Ord k => [Either ParseError (Map k a)] -> Either ParseError (Map k a)
+    combineEitherMaps [] = (Right empty)
+    combineEitherMaps (x:xs) = liftM2 union x (combineEitherMaps xs)
+
+    combineMaps :: Ord k => [Map k a] -> Map k a
+    combineMaps [] = empty
+    combineMaps (x:xs) = union x $ combineMaps xs
+
+    vartoall :: Map Int [String]
+    vartoall = insert 1 ["test", "me"] (singleton 2 ["work", "now"])
+
+    inter :: VarToAllValuesMap -> [VarToValueMap]
+    inter x = inter4' $ inter3' $ inter2' $ inter' x 
+
+    inter' :: VarToAllValuesMap -> [(Int, [String])]
+    inter' vartoall = assocs vartoall
+
+    inter2' :: [(Int, [String])] -> [[(Int, String)]]
+    inter2' [] = []
+    inter2' (x:xs) = [(fst x, y) | y <- snd x] : inter2' xs
+
+    inter3' :: [[(Int, String)]] -> [[(Int, String)]]
+    inter3' [] = []
+    inter3' (x:xs) = combinations x $ inter3' xs
+
+    inter4' :: [[(Int, String)]] -> [VarToValueMap]
+    inter4' [] = []
+    inter4' (x:xs) = fromList x : inter4' xs
+
+    combinations :: [a] -> [[a]] -> [[a]]
+    combinations xs [] = [[x] | x <- xs]
+    combinations [] _ = []
+    combinations (x:xs) ys = [x : y | y <- ys] ++ combinations xs ys
+
+    --listLength :: Numbers -> Int
+    --listLength (Number _ next) = 1 + listLength next
+    --listLength (NumberEnd _) = 1
+
+    --listOfColumns :: Numbers -> [Int]
+    --listOfColumns x = [0..(listLength x - 1)]
 
     varToColumnMapping :: Numbers -> Map Int Int
     varToColumnMapping x = varToColumnMapping' x 0
@@ -103,26 +175,26 @@ module Main where
     varToColumnMapping' (Number i next) counter = insert i counter $ varToColumnMapping' next (counter + 1)
     varToColumnMapping' (NumberEnd i) counter = singleton i counter
 
-    genMapping :: Map Int Int -> [[String]] -> [Map Int String]
-    genMapping _ [] = []
-    genMapping columnToVar (x:xs) = Data.Map.map (\index -> x !! index) columnToVar : (genMapping columnToVar xs)
+    --genMapping :: Map Int Int -> [[String]] -> [Map Int String]
+    --genMapping _ [] = []
+    --genMapping columnToVar (x:xs) = Data.Map.map (\index -> x !! index) columnToVar : (genMapping columnToVar xs)
 
-    format :: Numbers -> Map Int String -> [String]
-    format (Number i next) mapping = mapping ! i : format next mapping
-    format (NumberEnd i) mapping = [mapping ! i]
+    --format :: Numbers -> Map Int String -> [String]
+    --format (Number i next) mapping = mapping ! i : format next mapping
+    --format (NumberEnd i) mapping = [mapping ! i]
 
-    formatGroup :: Numbers -> [Map Int String] -> [[String]]
-    formatGroup output mappings = Prelude.map (format output) mappings
+    --formatGroup :: Numbers -> [Map Int String] -> [[String]]
+    --formatGroup output mappings = Prelude.map (format output) mappings
 
-    getIndex :: [[String]] -> Int -> [String]
-    getIndex [] index = []
-    getIndex (line:rest) index = line !! index : getIndex rest index
+    --getIndex :: [[String]] -> Int -> [String]
+    --getIndex [] index = []
+    --getIndex (line:rest) index = line !! index : getIndex rest index
     
     -- mappingsFromCSV :: String -> Numbers -> IO (Either ParseError [[String]])
-    mappingsFromCSV file indexes output = do contents <- parseFromFile csvFile (file ++ ".csv")
-                                             let inter = fmap (genMapping indexes) contents
-                                             let result = fmap (formatGroup output) inter
-                                             return result
+    --mappingsFromCSV file indexes output = do contents <- parseFromFile csvFile (file ++ ".csv")
+    --                                         let inter = fmap (genMapping indexes) contents
+    --                                         let result = fmap (formatGroup output) inter
+    --                                         return result
 
     test = express $ killme $ alexScanTokens "1,3,2,4 where a(1,2) and b(3,4)"
 
