@@ -32,7 +32,7 @@ module Main where
     --functions are express, errorCheck, impliedEquals, getMappings, filterMappings, mappingToCSV, lexicographicalOrdering
 
     data ExpressionData = EData Output DataSources Equalities deriving Show
-    data Mappings = Mapping Output [VarToValueMap] Equalities deriving Show
+    data Mappings = Mapping Output (IO (Either ParseError [VarToValueMap])) Equalities 
 
     --this just makes the Expression more paletable
     express :: Exp -> ExpressionData
@@ -48,7 +48,7 @@ module Main where
     --here we read the files and produce a list of possible maps of variables to string values
     --this also assumes no variables coming from two files
     --getMappings :: ExpressionData -> Mappings
-    --getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
+    getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
 
     --here we remove any mappings for which the equalities do not hold
     --filterMappings :: Mappings -> Mappings
@@ -116,9 +116,11 @@ module Main where
     --getColumns (x:xs) csv = [line !! x | line <- csv] : getColumns xs csv
 
     --dataSourcesToMappings :: DataSources -> IO (Either ParseError VarToAllValuesMap)
-    dataSourcesToMappings datasources = fmap (liftM inter) $ fmap combineEitherMaps $ fmap elems $ traverseWithKey dataSourceToMapping datasources
-                                           --let result = fmap combineFiles whynot
-                                           --return whynot
+    dataSourcesToMappings datasources = do readColumns <- traverseWithKey dataSourceToMapping datasources
+                                           let columns = elems readColumns
+                                           let combined = combineEitherMaps columns
+                                           let result = fmap inter combined
+                                           return result
 
     dataSourceToMapping file vartocolumn = do contents <- parseFromFile csvFile $ file ++ ".csv"
                                               let result = fmap (getColumns vartocolumn) contents
