@@ -24,13 +24,13 @@ import Tokens
 %nonassoc '(' ')'
 %%
 
-Exp : Output where Pred {ExpNorm $1 $3}
+Exp : Numbers where Pred {ExpNorm $1 $3}
 
-Output : int ',' Output {OutputInt $1 $3}
-       | int            {OutputEnd $1}
+Numbers : int ',' Numbers {Number $1 $3}
+        | int             {NumberEnd $1}
 
 Pred : Pred and Pred {PredAnd $1 $3}
-     | var '(' Output ')' {PredSource $1 $3}
+     | var '(' Numbers ')' {PredSource $1 $3}
      | int '=' int {PredEq $1 $3}
 
 {
@@ -38,12 +38,12 @@ Pred : Pred and Pred {PredAnd $1 $3}
 parseError :: [Token] -> a
 parseError _ = error "Parse error"
 
-data Exp = ExpNorm Output Pred deriving Show
+data Exp = ExpNorm Numbers Pred deriving Show
 
-data Output = OutputInt Int Output
-    | OutputEnd Int deriving Show
+data Numbers = Number Int Numbers
+    | NumberEnd Int deriving Show
 
 data Pred = PredAnd Pred Pred
-    | PredSource String Output
+    | PredSource String Numbers
     | PredEq Int Int deriving Show
 }
