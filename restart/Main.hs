@@ -5,17 +5,6 @@ module Main where
     import Data.CSV
     import Data.Map
     
-    --evaluates predicates
-    --evalPred :: [(String, Exp)] -> Pred -> Bool
-    --evalPred vars (And p1 p2) = evalPred p1 && evalPred p2
-    --evalPred vars (Or p1 p2) = evalPred p1 || evalPred p2
-    --evalPred vars (Xor p1 p2) = (evalPred p1 || evalPred p2) && (!(evalPred p1 && evalPred p2))
-    --evalPred vars (EqVarInt v i) = (getVal vars v) == i
-    --evalPred vars (EqVarVar v1 v2) = (getVal vars v1) == (getVal vars v1)
-    --evalPred vars (EqIntInt i1 i2) = i1 == i2
-    --evalPred vars (PredTrue) = True
-    --evalPred vars (PredFalse) = False
-    
     --main method for no real reason
     main :: IO()
     main = do  
@@ -24,14 +13,56 @@ module Main where
         putStrLn str
         --return
         --return $ parseCalc tokens
-
---eval :: ExpNorm -> ()
-    express (ExpNorm outputs preds) = (datasources preds, equal preds)
     
-    datasources :: Pred -> Map String Numbers
-    datasources (PredAnd p1 p2) = union (datasources p1)  (datasources p2)
-    datasources (PredSource file out) = singleton file out
-    datasources (PredEq _ _) = empty
+    --although we use FilePath the '.csv' is implied and not kept within the string
+    --not redefining this but just for reference
+    --type FilePath = String
+
+    type VarToColumnMap = Map Int Int
+    type VarToValueMap = Map Int String
+    type DataSources = Map FilePath VarToColumnMap
+    type Equalities = Map Int Int
+    type Output = [Int]
+
+    --dataflow:
+    --we go from Exp -> ExpressionData -> ExpressionData -> Mappings -> Mappings -> [[String]] -> [[String]]
+    --functions are express, impliedEquals, getMappings, filterMappings, mappingToCSV, lexicographicalOrdering
+
+    data ExpressionData = EData Output DataSources Equalities deriving Show
+    data Mappings = Mappings Output [VarToValueMap] Equalities deriving Show
+
+    --this just makes the Expression more paletable
+    express :: Exp -> ExpressionData
+    express (ExpNorm outputs preds) = EData (numbersToList outputs) (sources preds) (equal preds)
+    
+    --here we are checking for implied equals through use of one variable coming from multiple files
+    --impliedEquals :: ExpressionData -> ExpressionData
+
+    --here we read the files and produce a list of possible maps of variables to string values
+    --getMappings :: ExpressionData -> Mappings
+
+    --here we remove any mappings for which the equalities do not hold
+    --filterMappings :: Mappings -> Mappings
+
+    --here we produce a list of all possible outputs
+    --mappingToCSV :: Mapping -> [[String]]
+
+    --here we order the outputs lexicographically ;)
+    --lexicographicalOrdering :: [[String]]
+    
+    numbersToList :: Numbers -> [Int]
+    numbersToList (Number i next) = i : numbersToList next
+    numbersToList (NumberEnd i) = [i]
+
+    sources :: Pred -> DataSources
+    sources mapIn = Data.Map.map varToColumnMapping $ sources' mapIn
+
+    sources' :: Pred -> Map String Numbers
+    sources' (PredAnd p1 p2) = union (sources' p1)  (sources' p2)
+    sources' (PredSource file out) = singleton file out
+    sources' (PredEq _ _) = empty
+
+    --sourcesToMapping
 
     equal :: Pred -> Map Int Int
     equal (PredAnd p1 p2) = union (equal p1) (equal p2)
@@ -87,7 +118,7 @@ module Main where
                                              let result = fmap (formatGroup output) inter
                                              return result
 
-    test = fst $ express $ killme $ alexScanTokens "1,3,2,4 where a(5,6) and b(3,4)"
+    test = express $ killme $ alexScanTokens "1,3,2,4 where a(1,2) and b(3,4)"
 
     --mapping :: [[String]] -> [(Int, Int)] -> [[(Int, String)]]
     --mapping (x:xs)
