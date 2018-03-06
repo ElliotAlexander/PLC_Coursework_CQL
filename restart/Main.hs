@@ -25,21 +25,27 @@ module Main where
     type Output = [Int]
 
     --dataflow:
-    --we go from Exp -> ExpressionData -> ExpressionData -> Mappings -> Mappings -> [[String]] -> [[String]]
-    --functions are express, impliedEquals, getMappings, filterMappings, mappingToCSV, lexicographicalOrdering
+    --we go from Exp -> ExpressionData -> ExpressionData -> ExpressionData -> Mappings -> Mappings -> [[String]] -> [[String]]
+    --functions are express, errorCheck, impliedEquals, getMappings, filterMappings, mappingToCSV, lexicographicalOrdering
 
     data ExpressionData = EData Output DataSources Equalities deriving Show
-    data Mappings = Mappings Output [VarToValueMap] Equalities deriving Show
+    data Mappings = Mapping Output [VarToValueMap] Equalities deriving Show
 
     --this just makes the Expression more paletable
     express :: Exp -> ExpressionData
     express (ExpNorm outputs preds) = EData (numbersToList outputs) (sources preds) (equal preds)
     
+    --here we check that variables needed for equality and output are actually sourced from a file
+    --errorCheck :: ExpressionData -> ExpressionData
+
     --here we are checking for implied equals through use of one variable coming from multiple files
+    --also change instance to another variable
     --impliedEquals :: ExpressionData -> ExpressionData
 
     --here we read the files and produce a list of possible maps of variables to string values
-    --getMappings :: ExpressionData -> Mappings
+    --this also assumes no variables coming from two files
+    getMappings :: ExpressionData -> Mappings
+    getAllMappings (EData outs datasources equalities) = Mapping outs (datasourcesToMappings datasources) equalities
 
     --here we remove any mappings for which the equalities do not hold
     --filterMappings :: Mappings -> Mappings
@@ -49,7 +55,7 @@ module Main where
 
     --here we order the outputs lexicographically ;)
     --lexicographicalOrdering :: [[String]]
-    
+
     numbersToList :: Numbers -> [Int]
     numbersToList (Number i next) = i : numbersToList next
     numbersToList (NumberEnd i) = [i]
