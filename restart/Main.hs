@@ -47,7 +47,7 @@ module Main where
 
     --here we read the files and produce a list of possible maps of variables to string values
     --this also assumes no variables coming from two files
-    --getMappings :: ExpressionData -> Mappings
+    getMappings :: ExpressionData -> Mappings
     getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
 
     --here we remove any mappings for which the equalities do not hold
@@ -86,36 +86,6 @@ module Main where
 
     getSources (EData outs datasources equalities) = datasources
 
-    --getMappings (EData outs datasources equalities) = datasourcesToMappings datasources
-    
-    --datasourcesToMappings :: DataSources -> Map FilePath (IO (Either ParseError [Map Int String]))
-    --datasourcesToMappings sources =  do splitByFile <- mapWithKey datasourceToMapping sources
-    --                                    let 
-    --                                   --let joined = fmap elems splitByFile
-    --                                   --return splitByFile
-
-    --datasourceToMapping :: FilePath -> VarToColumnMap -> IO (Either ParseError [VarToValueMap])
-    --datasourceToMapping file varToColumnMap = do contents <- parseFromFile csvFile (file ++ ".csv")
-    --                                             let mapping = fmap (genMapping varToColumnMap) contents
-    --                                             return mapping
-    
-    --DataSources -> Map FilePath (Map Int [String]) -> Map Int [String] -> [Map Int String]
-    --dataSourcesToMappings :: DataSources -> [VarToValueMap]
-    --dataSourcesToMappings sources = mapWithKey first sources
-
-    --please datasources = mapWithKey getColumnsFromFile datasources
-
-    --getColumnsFromFile file columns = Data.Map.map (getColumnFromFile file) columns
-
-    --getColumnFromFile file column = do contents <- parseFromFile csvFile (file ++ ".csv")
-    --                                   let columnValues = fmap (getColumn column) contents
-    --                                   return columnValues
-
-    --getColumns :: [Int] -> [[String]] -> [[String]]
-    --getColumns [] _ = []
-    --getColumns (x:xs) csv = [line !! x | line <- csv] : getColumns xs csv
-
-    --dataSourcesToMappings :: DataSources -> IO (Either ParseError VarToAllValuesMap)
     dataSourcesToMappings datasources = do readColumns <- traverseWithKey dataSourceToMapping datasources
                                            let columns = elems readColumns
                                            let combined = combineEitherMaps columns
