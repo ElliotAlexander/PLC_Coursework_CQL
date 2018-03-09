@@ -47,8 +47,8 @@ module Main where
 
     --here we read the files and produce a list of possible maps of variables to string values
     --this also assumes no variables coming from two files
-    --getMappings :: ExpressionData -> Mappings
-    --getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
+    getMappings :: ExpressionData -> Mappings
+    getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
 
     --here we remove any mappings for which the equalities do not hold
     --filterMappings :: Mappings -> Mappings
@@ -90,15 +90,14 @@ module Main where
     --impliedEquals
 
     --getMappings
-
-    getSources (EData outs datasources equalities) = datasources
-
+    dataSourcesToMappings :: DataSources -> IO (Either ParseError [VarToValueMap])
     dataSourcesToMappings datasources = do readColumns <- traverseWithKey dataSourceToMapping datasources
                                            let columns = elems readColumns
                                            let combined = combineEitherMaps columns
-                                           let result = fmap flipMappingStyle combined
+                                           let result = fmap generateMappings combined
                                            return result
 
+    dataSourceToMapping :: FilePath -> VarToColumnMap -> IO (Either ParseError VarToAllValuesMap)
     dataSourceToMapping file vartocolumn = do contents <- parseFromFile csvFile $ file ++ ".csv"
                                               let result = fmap (getColumns vartocolumn) contents
                                               return result
@@ -113,11 +112,12 @@ module Main where
     combineMaps = Prelude.foldr union empty
 
     --just a test
-    vartoall :: Map Int [String]
+    vartoall :: VarToAllValuesMap
     vartoall = insert 1 ["test", "me"] (singleton 2 ["work", "now"])
 
-    flipMappingStyle :: Ord k => Map k [v] -> [Map k v]
-    flipMappingStyle x = Prelude.map fromList $ Prelude.foldr (combinations . (\ pair -> [(fst pair, val) | val <- snd pair])) [] (assocs x)
+    --generates possible mappings
+    generateMappings :: Ord k => Map k [v] -> [Map k v]
+    generateMappings x = Prelude.map fromList $ Prelude.foldr (combinations . (\ pair -> [(fst pair, val) | val <- snd pair])) [] $ assocs x
 
     --recursive combiner
     combinations :: [a] -> [[a]] -> [[a]]
@@ -125,31 +125,6 @@ module Main where
     combinations [] _ = []
     combinations (x:xs) ys = [x : y | y <- ys] ++ combinations xs ys
 
-
-    --genMapping :: Map Int Int -> [[String]] -> [Map Int String]
-    --genMapping _ [] = []
-    --genMapping columnToVar (x:xs) = Data.Map.map (\index -> x !! index) columnToVar : (genMapping columnToVar xs)
-
-    --format :: Numbers -> Map Int String -> [String]
-    --format (Number i next) mapping = mapping ! i : format next mapping
-    --format (NumberEnd i) mapping = [mapping ! i]
-
-    --formatGroup :: Numbers -> [Map Int String] -> [[String]]
-    --formatGroup output mappings = Prelude.map (format output) mappings
-
-    --getIndex :: [[String]] -> Int -> [String]
-    --getIndex [] index = []
-    --getIndex (line:rest) index = line !! index : getIndex rest index
-
-    -- mappingsFromCSV :: String -> Numbers -> IO (Either ParseError [[String]])
-    --mappingsFromCSV file indexes output = do contents <- parseFromFile csvFile (file ++ ".csv")
-    --                                         let inter = fmap (genMapping indexes) contents
-    --                                         let result = fmap (formatGroup output) inter
-    --                                         return result
-
+    --just a parsing test
+    test :: ExpressionData
     test = express $ killme $ alexScanTokens "1,3,2,4 where a(1,2) and b(3,4) and 1 = 2"
-
-    --mapping :: [[String]] -> [(Int, Int)] -> [[(Int, String)]]
-    --mapping (x:xs)
-
-    --allMappings input = mappingsFromCSV (fst input) (listOfColumns $ snd input)
