@@ -11,7 +11,7 @@
   * missingH
 
 ### Installation
-sudo apt install haskell-platform
+sudo apt install haskell-platform </br>
 cabal install alex happy containers missingH
 
 ## Compilation
