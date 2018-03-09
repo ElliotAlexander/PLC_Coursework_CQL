@@ -11,11 +11,15 @@
   * missingH
 
 ### Installation
+```bash
 sudo apt install haskell-platform </br>
 cabal install alex happy containers missingH
-
+```
 ## Compilation
+```bash
 ghc Main.hs
-
+```
 ## Run
+```bash
 ./Main filename.cql
+```
