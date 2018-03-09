@@ -12,7 +12,7 @@
 
 ### Installation
 ```bash
-sudo apt install haskell-platform </br>
+sudo apt install haskell-platform
 cabal install alex happy containers missingH
 ```
 ## Compilation
