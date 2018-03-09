@@ -5,16 +5,16 @@ module Main where
     import Data.CSV
     import Data.Map
     import Control.Monad
-    
+
     --main method for no real reason
     main :: IO()
-    main = do  
+    main = do
         str <- readFile "input.meme"
         --tokens <- alexScanTokens str
         putStrLn str
         --return
         --return $ parseCalc tokens
-    
+
     --although we use FilePath the '.csv' is implied and not kept within the string
     --not redefining this but just for reference
     --type FilePath = String
@@ -24,7 +24,7 @@ module Main where
     type VarToAllValuesMap = Map Int [String]
     type VarToValueMap = Map Int String
     type DataSources = Map FilePath VarToColumnMap
-    type Equalities = Map Int Int
+    type Equalities = [(Int, Int)]
     type Output = [Int]
 
     --dataflow:
@@ -32,12 +32,12 @@ module Main where
     --functions are express, errorCheck, impliedEquals, getMappings, filterMappings, mappingToCSV, lexicographicalOrdering
 
     data ExpressionData = EData Output DataSources Equalities deriving Show
-    data Mappings = Mapping Output (IO (Either ParseError [VarToValueMap])) Equalities 
+    data Mappings = Mapping Output (IO (Either ParseError [VarToValueMap])) Equalities
 
     --this just makes the Expression more paletable
     express :: Exp -> ExpressionData
     express (ExpNorm outputs preds) = EData (numbersToList outputs) (sources preds) (equal preds)
-    
+
     --here we check that variables needed for equality and output are actually sourced from a file
     --errorCheck :: ExpressionData -> ExpressionData
 
@@ -47,8 +47,8 @@ module Main where
 
     --here we read the files and produce a list of possible maps of variables to string values
     --this also assumes no variables coming from two files
-    getMappings :: ExpressionData -> Mappings
-    getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
+    --getMappings :: ExpressionData -> Mappings
+    --getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
 
     --here we remove any mappings for which the equalities do not hold
     --filterMappings :: Mappings -> Mappings
@@ -69,14 +69,21 @@ module Main where
     sources mapIn = Data.Map.map varToColumnMapping $ sources' mapIn
 
     sources' :: Pred -> Map String Numbers
-    sources' (PredAnd p1 p2) = union (sources' p1)  (sources' p2)
+    sources' (PredAnd p1 p2) = sources' p1 `union` sources' p2
     sources' (PredSource file out) = singleton file out
     sources' (PredEq _ _) = empty
 
-    equal :: Pred -> Map Int Int
-    equal (PredAnd p1 p2) = union (equal p1) (equal p2)
-    equal (PredSource file out) = empty
-    equal (PredEq a b) = singleton a b
+    varToColumnMapping :: Numbers -> VarToColumnMap
+    varToColumnMapping = varToColumnMapping' 0
+
+    varToColumnMapping' :: Int -> Numbers -> VarToColumnMap
+    varToColumnMapping' counter (Number i next) = insert i counter $ varToColumnMapping' (counter + 1) next
+    varToColumnMapping' counter (NumberEnd i) = singleton i counter
+
+    equal :: Pred -> [(Int, Int)]
+    equal (PredSource file out) = []
+    equal (PredEq a b) = [(a,b)]
+    equal (PredAnd p1 p2) = equal p1 ++ equal p2
 
     --errorCheck
 
@@ -89,63 +96,35 @@ module Main where
     dataSourcesToMappings datasources = do readColumns <- traverseWithKey dataSourceToMapping datasources
                                            let columns = elems readColumns
                                            let combined = combineEitherMaps columns
-                                           let result = fmap inter combined
+                                           let result = fmap flipMappingStyle combined
                                            return result
 
     dataSourceToMapping file vartocolumn = do contents <- parseFromFile csvFile $ file ++ ".csv"
                                               let result = fmap (getColumns vartocolumn) contents
                                               return result
-    
+
     getColumns :: VarToColumnMap -> CSV -> VarToAllValuesMap
     getColumns vartocolumn csv = Data.Map.map (\col -> [line !! col | line <-csv]) vartocolumn
 
-    combineEitherMaps :: Ord k => [Either ParseError (Map k a)] -> Either ParseError (Map k a)
-    combineEitherMaps [] = (Right empty)
-    combineEitherMaps (x:xs) = liftM2 union x (combineEitherMaps xs)
+    combineEitherMaps :: [Either a1 (Map Int a)] -> Either a1 (Map Int a)
+    combineEitherMaps = Prelude.foldr (liftM2 union) (Right empty)
 
     combineMaps :: Ord k => [Map k a] -> Map k a
-    combineMaps [] = empty
-    combineMaps (x:xs) = union x $ combineMaps xs
+    combineMaps = Prelude.foldr union empty
 
+    --just a test
     vartoall :: Map Int [String]
     vartoall = insert 1 ["test", "me"] (singleton 2 ["work", "now"])
 
-    inter :: VarToAllValuesMap -> [VarToValueMap]
-    inter x = inter4' $ inter3' $ inter2' $ inter' x 
+    flipMappingStyle :: Ord k => Map k [v] -> [Map k v]
+    flipMappingStyle x = Prelude.map fromList $ Prelude.foldr (combinations . (\ pair -> [(fst pair, val) | val <- snd pair])) [] (assocs x)
 
-    inter' :: VarToAllValuesMap -> [(Int, [String])]
-    inter' vartoall = assocs vartoall
-
-    inter2' :: [(Int, [String])] -> [[(Int, String)]]
-    inter2' [] = []
-    inter2' (x:xs) = [(fst x, y) | y <- snd x] : inter2' xs
-
-    inter3' :: [[(Int, String)]] -> [[(Int, String)]]
-    inter3' [] = []
-    inter3' (x:xs) = combinations x $ inter3' xs
-
-    inter4' :: [[(Int, String)]] -> [VarToValueMap]
-    inter4' [] = []
-    inter4' (x:xs) = fromList x : inter4' xs
-
+    --recursive combiner
     combinations :: [a] -> [[a]] -> [[a]]
     combinations xs [] = [[x] | x <- xs]
     combinations [] _ = []
     combinations (x:xs) ys = [x : y | y <- ys] ++ combinations xs ys
 
-    --listLength :: Numbers -> Int
-    --listLength (Number _ next) = 1 + listLength next
-    --listLength (NumberEnd _) = 1
-
-    --listOfColumns :: Numbers -> [Int]
-    --listOfColumns x = [0..(listLength x - 1)]
-
-    varToColumnMapping :: Numbers -> Map Int Int
-    varToColumnMapping x = varToColumnMapping' x 0
-
-    varToColumnMapping' :: Numbers -> Int -> Map Int Int
-    varToColumnMapping' (Number i next) counter = insert i counter $ varToColumnMapping' next (counter + 1)
-    varToColumnMapping' (NumberEnd i) counter = singleton i counter
 
     --genMapping :: Map Int Int -> [[String]] -> [Map Int String]
     --genMapping _ [] = []
@@ -161,14 +140,14 @@ module Main where
     --getIndex :: [[String]] -> Int -> [String]
     --getIndex [] index = []
     --getIndex (line:rest) index = line !! index : getIndex rest index
-    
+
     -- mappingsFromCSV :: String -> Numbers -> IO (Either ParseError [[String]])
     --mappingsFromCSV file indexes output = do contents <- parseFromFile csvFile (file ++ ".csv")
     --                                         let inter = fmap (genMapping indexes) contents
     --                                         let result = fmap (formatGroup output) inter
     --                                         return result
 
-    test = express $ killme $ alexScanTokens "1,3,2,4 where a(1,2) and b(3,4)"
+    test = express $ killme $ alexScanTokens "1,3,2,4 where a(1,2) and b(3,4) and 1 = 2"
 
     --mapping :: [[String]] -> [(Int, Int)] -> [[(Int, String)]]
     --mapping (x:xs)
