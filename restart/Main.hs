@@ -57,8 +57,8 @@ module Main where
     -- Outs = [Int]
     -- dataSourceMappings = [Map Int String]
     -- equalities = [(Int, Int)]
-    filterMappings :: Mappings -> Mappings
-    filterMappings (Mapping outs dataSourceMappings equalities) =
+    --filterMappings :: Mappings -> Mappings
+    --filterMappings (Mapping outs dataSourceMappings equalities) =
 
 
 
@@ -70,16 +70,6 @@ module Main where
 
     -- Guess who made this WAYYY to complicated, THATS RIGHT ITS ME :)
     -- my quicksort was hot though :(
-
-    -- If a less than b, true
-    --lexcompare :: [String] -> String -> [String]
-    --lexcompare [] _ = []
-    --lexcompare (a:xs) b
-    --    | first < second = [a] ++ lexcompare xs b | otherwise = []
-        -- | first == second = lexcompare ((drop 1 a) ++ xs) (drop 1 b) | otherwise = []
-    --    where
-    --      first = ord $ toLower (a !! 1)
-    --      second = ord $ toLower (b !! 1)
 
     --AUXILIARY FUNCTIONS
     --express
