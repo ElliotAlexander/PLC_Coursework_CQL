@@ -4,6 +4,7 @@ module Main where
     import Text.ParserCombinators.Parsec
     import Data.CSV
     import Data.Map
+    import Data.List
     import Control.Monad
 
     --main method for no real reason
@@ -34,6 +35,7 @@ module Main where
     data ExpressionData = EData Output DataSources Equalities deriving Show
     data Mappings = Mapping Output (IO (Either ParseError [VarToValueMap])) Equalities
 
+
     --this just makes the Expression more paletable
     express :: Exp -> ExpressionData
     express (ExpNorm outputs preds) = EData (numbersToList outputs) (sources preds) (equal preds)
@@ -51,13 +53,33 @@ module Main where
     getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
 
     --here we remove any mappings for which the equalities do not hold
-    --filterMappings :: Mappings -> Mappings
+
+    -- Outs = [Int]
+    -- dataSourceMappings = [Map Int String]
+    -- equalities = [(Int, Int)]
+    filterMappings :: Mappings -> Mappings
+    filterMappings (Mapping outs dataSourceMappings equalities) =
+
+
+
 
     --here we produce a list of all possible outputs
     --mappingToCSV :: Mapping -> [[String]]
+    lexicographicalOrdering :: [[String]] -> [[String]]
+    lexicographicalOrdering xs = fmap sort xs
 
-    --here we order the outputs lexicographically ;)
-    --lexicographicalOrdering :: [[String]]
+    -- Guess who made this WAYYY to complicated, THATS RIGHT ITS ME :)
+    -- my quicksort was hot though :(
+
+    -- If a less than b, true
+    --lexcompare :: [String] -> String -> [String]
+    --lexcompare [] _ = []
+    --lexcompare (a:xs) b
+    --    | first < second = [a] ++ lexcompare xs b | otherwise = []
+        -- | first == second = lexcompare ((drop 1 a) ++ xs) (drop 1 b) | otherwise = []
+    --    where
+    --      first = ord $ toLower (a !! 1)
+    --      second = ord $ toLower (b !! 1)
 
     --AUXILIARY FUNCTIONS
     --express
@@ -69,7 +91,7 @@ module Main where
     sources mapIn = Data.Map.map varToColumnMapping $ sources' mapIn
 
     sources' :: Pred -> Map String Numbers
-    sources' (PredAnd p1 p2) = sources' p1 `union` sources' p2
+    sources' (PredAnd p1 p2) = sources' p1 `Data.Map.union` sources' p2
     sources' (PredSource file out) = singleton file out
     sources' (PredEq _ _) = empty
 
@@ -77,7 +99,7 @@ module Main where
     varToColumnMapping = varToColumnMapping' 0
 
     varToColumnMapping' :: Int -> Numbers -> VarToColumnMap
-    varToColumnMapping' counter (Number i next) = insert i counter $ varToColumnMapping' (counter + 1) next
+    varToColumnMapping' counter (Number i next) = Data.Map.insert i counter $ varToColumnMapping' (counter + 1) next
     varToColumnMapping' counter (NumberEnd i) = singleton i counter
 
     equal :: Pred -> [(Int, Int)]
@@ -106,14 +128,14 @@ module Main where
     getColumns vartocolumn csv = Data.Map.map (\col -> [line !! col | line <-csv]) vartocolumn
 
     combineEitherMaps :: [Either a1 (Map Int a)] -> Either a1 (Map Int a)
-    combineEitherMaps = Prelude.foldr (liftM2 union) (Right empty)
+    combineEitherMaps = Prelude.foldr (liftM2 Data.Map.union) (Right empty)
 
     combineMaps :: Ord k => [Map k a] -> Map k a
-    combineMaps = Prelude.foldr union empty
+    combineMaps = Prelude.foldr Data.Map.union empty
 
     --just a test
     vartoall :: VarToAllValuesMap
-    vartoall = insert 1 ["test", "me"] (singleton 2 ["work", "now"])
+    vartoall = Data.Map.insert 1 ["test", "me"] (singleton 2 ["work", "now"])
 
     --generates possible mappings
     generateMappings :: Ord k => Map k [v] -> [Map k v]
