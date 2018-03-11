@@ -3,7 +3,8 @@ module Main where
     import Tokens
     import Text.ParserCombinators.Parsec
     import Data.CSV
-    import Data.Map
+    -- Apparently we should use .strict if we're not thunking computation on larger data structures
+    import Data.Map.Strict
     import Data.List
     import Control.Monad
 
@@ -57,8 +58,15 @@ module Main where
     -- Outs = [Int]
     -- dataSourceMappings = [Map Int String]
     -- equalities = [(Int, Int)]
-    --filterMappings :: Mappings -> Mappings
-    --filterMappings (Mapping outs dataSourceMappings equalities) =
+    filterMappings :: Mappings -> (IO (Either ParseError [Maybe String]))
+    filterMappings (Mapping outs dataSourceMappings equalities) = filterMappings' (equalities !! 0) dataSourceMappings
+
+
+    filterMappings' :: (Int, Int) -> (IO (Either ParseError [VarToValueMap])) -> (IO (Either ParseError [Maybe String]))
+    filterMappings' (a, b) (x:xs) = do first <- fmap (Data.Map.Strict.lookup a) x
+                                       second <- fmap (Data.Map.Strict.lookup b) x
+                                       let combined = first `Data.List.intersect` second
+                                       return combined
 
 
 
@@ -78,10 +86,10 @@ module Main where
     numbersToList (NumberEnd i) = [i]
 
     sources :: Pred -> DataSources
-    sources mapIn = Data.Map.map varToColumnMapping $ sources' mapIn
+    sources mapIn = Data.Map.Strict.map varToColumnMapping $ sources' mapIn
 
     sources' :: Pred -> Map String Numbers
-    sources' (PredAnd p1 p2) = sources' p1 `Data.Map.union` sources' p2
+    sources' (PredAnd p1 p2) = sources' p1 `Data.Map.Strict.union` sources' p2
     sources' (PredSource file out) = singleton file out
     sources' (PredEq _ _) = empty
 
@@ -89,7 +97,7 @@ module Main where
     varToColumnMapping = varToColumnMapping' 0
 
     varToColumnMapping' :: Int -> Numbers -> VarToColumnMap
-    varToColumnMapping' counter (Number i next) = Data.Map.insert i counter $ varToColumnMapping' (counter + 1) next
+    varToColumnMapping' counter (Number i next) = Data.Map.Strict.insert i counter $ varToColumnMapping' (counter + 1) next
     varToColumnMapping' counter (NumberEnd i) = singleton i counter
 
     equal :: Pred -> [(Int, Int)]
@@ -115,17 +123,17 @@ module Main where
                                               return result
 
     getColumns :: VarToColumnMap -> CSV -> VarToAllValuesMap
-    getColumns vartocolumn csv = Data.Map.map (\col -> [line !! col | line <-csv]) vartocolumn
+    getColumns vartocolumn csv = Data.Map.Strict.map (\col -> [line !! col | line <-csv]) vartocolumn
 
     combineEitherMaps :: [Either a1 (Map Int a)] -> Either a1 (Map Int a)
-    combineEitherMaps = Prelude.foldr (liftM2 Data.Map.union) (Right empty)
+    combineEitherMaps = Prelude.foldr (liftM2 Data.Map.Strict.union) (Right empty)
 
     combineMaps :: Ord k => [Map k a] -> Map k a
-    combineMaps = Prelude.foldr Data.Map.union empty
+    combineMaps = Prelude.foldr Data.Map.Strict.union empty
 
     --just a test
     vartoall :: VarToAllValuesMap
-    vartoall = Data.Map.insert 1 ["test", "me"] (singleton 2 ["work", "now"])
+    vartoall = Data.Map.Strict.insert 1 ["test", "me"] (singleton 2 ["work", "now"])
 
     --generates possible mappings
     generateMappings :: Ord k => Map k [v] -> [Map k v]
