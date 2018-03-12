@@ -58,25 +58,27 @@ module Main where
     -- Outs = [Int]
     -- dataSourceMappings = [Map Int String]
     -- equalities = [(Int, Int)]
-    filterMappings :: Mappings -> IO String
-    filterMappings (Mapping outs dataSourceMappings equalities) = filterMappings' (equalities !! 0) dataSourceMappings
+    --filterMappings :: Mappings -> IO String
+    --filterMappings (Mapping outs dataSourceMappings equalities) = filterMappings' (equalities !! 0) dataSourceMappings
 
 
-    filterMappings' :: (Int, Int) -> IO (Either ParseError [VarToValueMap]) -> IO String
-    filterMappings' (a, b) (x:xs) = do first <- fmap (Data.Map.Strict.lookup a) x
-                                       second <- fmap (Data.Map.Strict.lookup b) x
-                                       return second
+    filterMappings' :: (Int, Int) -> [VarToValueMap] -> [Maybe String]
+    filterMappings' (a, b) vals = do first <- fmap (Data.Map.Strict.lookup a) vals
+                                     second <- fmap (Data.Map.Strict.lookup b) vals
+                                     return second
 
-
+    ifEq :: (Int, Int) -> VarToValueMap -> VarToValueMap -> Maybe [VarToValueMap]
+    ifEq (k1,k2) a b
+      | (Data.Map.Strict.lookup k1 a) == (Data.Map.Strict.lookup k2 b) = Just [a, b]
+      | otherwise = Nothing
 
 
     --here we produce a list of all possible outputs
     --mappingToCSV :: Mapping -> [[String]]
+
+
     lexicographicalOrdering :: [[String]] -> [[String]]
     lexicographicalOrdering xs = fmap sort xs
-
-    -- Guess who made this WAYYY to complicated, THATS RIGHT ITS ME :)
-    -- my quicksort was hot though :(
 
     --AUXILIARY FUNCTIONS
     --express
