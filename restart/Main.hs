@@ -58,15 +58,14 @@ module Main where
     -- Outs = [Int]
     -- dataSourceMappings = [Map Int String]
     -- equalities = [(Int, Int)]
-    filterMappings :: Mappings -> (IO (Either ParseError [Maybe String]))
+    filterMappings :: Mappings -> IO String
     filterMappings (Mapping outs dataSourceMappings equalities) = filterMappings' (equalities !! 0) dataSourceMappings
 
 
-    filterMappings' :: (Int, Int) -> (IO (Either ParseError [VarToValueMap])) -> (IO (Either ParseError [Maybe String]))
+    filterMappings' :: (Int, Int) -> IO (Either ParseError [VarToValueMap]) -> IO String
     filterMappings' (a, b) (x:xs) = do first <- fmap (Data.Map.Strict.lookup a) x
                                        second <- fmap (Data.Map.Strict.lookup b) x
-                                       let combined = first `Data.List.intersect` second
-                                       return combined
+                                       return second
 
 
 
