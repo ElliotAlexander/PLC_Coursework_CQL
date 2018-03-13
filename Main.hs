@@ -62,15 +62,23 @@ module Main where
     --filterMappings (Mapping outs dataSourceMappings equalities) = filterMappings' (equalities !! 0) dataSourceMappings
 
 
-    filterMappings' :: (Int, Int) -> [VarToValueMap] -> [Maybe String]
-    filterMappings' (a, b) vals = do first <- fmap (Data.Map.Strict.lookup a) vals
-                                     second <- fmap (Data.Map.Strict.lookup b) vals
-                                     return second
+    filterMappings' :: [(Int, Int)] -> [VarToValueMap] -> [VarToValueMap]
+    filterMappings' equalities vals = do out <- fmap (ifEq equalities) vals
+                                         return out
 
-    ifEq :: (Int, Int) -> VarToValueMap -> VarToValueMap -> Maybe [VarToValueMap]
-    ifEq (k1,k2) a b
-      | (Data.Map.Strict.lookup k1 a) == (Data.Map.Strict.lookup k2 b) = Just [a, b]
+
+    ifEq :: [(Int, Int)] -> VarToValueMap -> Maybe VarToValueMap
+    ifEq (x:xs) mapping
+      | out == Nothing = ifEq xs mapping
+      | otherwise = out
+        where
+          out = ifEq' mapping x
+
+    ifEq' :: VarToValueMap -> (Int, Int) -> Maybe VarToValueMap
+    ifEq' mapping (a, b)
+      | (Data.Map.Strict.lookup a mapping) == (Data.Map.Strict.lookup b mapping) = Just mapping
       | otherwise = Nothing
+
 
 
     --here we produce a list of all possible outputs
