@@ -82,8 +82,12 @@ module Main where
 
 
 
-    mappingToCSV' :: [VarToValueMap] -> [[String]]
-    mappingToCSV' mapping = fmap elems mapping
+    mappingToCSV' :: [Int] -> [VarToValueMap]-> [[String]]
+    mappingToCSV' outputs xs = Data.List.map (\ x -> [x ! o | o <- outputs]) xs
+
+
+    testMaps :: [VarToValueMap]
+    testMaps = [fromList [(1,"first"), (3, "third"), (2, "second")]]
 
 
     lexicographicalOrdering :: [[String]] -> [[String]]
