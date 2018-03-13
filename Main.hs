@@ -63,21 +63,14 @@ module Main where
 
 
     filterMappings' :: [(Int, Int)] -> [VarToValueMap] -> [VarToValueMap]
-    filterMappings' equalities vals = do out <- fmap (ifEq equalities) vals
+    filterMappings' equalities vals = do out <- [ x | x <- vals, ifEq' x equalities == True]
                                          return out
 
-
-    ifEq :: [(Int, Int)] -> VarToValueMap -> Maybe VarToValueMap
-    ifEq (x:xs) mapping
-      | out == Nothing = ifEq xs mapping
-      | otherwise = out
-        where
-          out = ifEq' mapping x
-
-    ifEq' :: VarToValueMap -> (Int, Int) -> Maybe VarToValueMap
-    ifEq' mapping (a, b)
-      | (Data.Map.Strict.lookup a mapping) == (Data.Map.Strict.lookup b mapping) = Just mapping
-      | otherwise = Nothing
+    ifEq' :: VarToValueMap -> [(Int, Int)] -> Bool
+    ifEq' mapping [] = True
+    ifEq' mapping (x:xs)
+      | (Data.Map.Strict.lookup (fst x) mapping) == (Data.Map.Strict.lookup (snd x) mapping) = ifEq' mapping xs
+      | otherwise = False
 
 
 
