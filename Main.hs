@@ -59,20 +59,18 @@ module Main where
     -- dataSourceMappings = [Map Int String]
     -- equalities = [(Int, Int)]
     filterMappings :: Mappings -> Mappings
-    filterMappings (Mapping outs dataSourceMappings equalities) = (Mapping outs (filterMappings' equalities dataSourceMappings) equalities)
-
-
+    filterMappings (Mapping outs dataSourceMappings equalities) = Mapping outs (fmap (fmap (filterMappings' equalities)) dataSourceMappings) equalities
 
     -- Produces a list of valid mappings. idk if we can presume this to be 1?
     filterMappings' :: [(Int, Int)] -> [VarToValueMap] -> [VarToValueMap]
-    filterMappings' equalities vals = filter (ifEq' equalities) vals
+    filterMappings' equalities = Data.List.filter (ifEq' equalities)
     --filterMappings' equalities vals = do out <- [ x | x <- vals, ifEq' x equalities == True]
     --                                   return out
 
     ifEq' :: [(Int, Int)] -> VarToValueMap -> Bool
     ifEq' [] mapping = True
     ifEq' (x:xs) mapping
-      | (Data.Map.Strict.lookup (fst x) mapping) == (Data.Map.Strict.lookup (snd x) mapping) = ifEq' mapping xs
+      | Data.Map.Strict.lookup (fst x) mapping == Data.Map.Strict.lookup (snd x) mapping = ifEq' xs mapping
       | otherwise = False
 
 
