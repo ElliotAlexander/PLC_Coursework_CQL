@@ -62,6 +62,8 @@ module Main where
     filterMappings (Mapping outs dataSourceMappings equalities) = (Mapping outs (filterMappings' equalities dataSourceMappings) equalities)
 
 
+
+    -- Produces a list of valid mappings. idk if we can presume this to be 1?
     filterMappings' :: [(Int, Int)] -> [VarToValueMap] -> [VarToValueMap]
     filterMappings' equalities vals = do out <- [ x | x <- vals, ifEq' x equalities == True]
                                          return out
