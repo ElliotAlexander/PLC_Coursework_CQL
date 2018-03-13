@@ -5,6 +5,7 @@
 
 ## Dependencies
 * Haskell
+* Cabal
   * alex
   * happy
   * containers
