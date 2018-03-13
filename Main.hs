@@ -76,7 +76,14 @@ module Main where
 
 
     --here we produce a list of all possible outputs
-    --mappingToCSV :: Mapping -> [[String]]
+    --mappingToCSV :: Mappings -> [[String]]
+    --mappingToCSV (Mapping outs dataSourceMappings equalities) =
+
+
+
+
+    mappingToCSV' :: [VarToValueMap] -> [[String]]
+    mappingToCSV' mapping = fmap elems mapping
 
 
     lexicographicalOrdering :: [[String]] -> [[String]]
