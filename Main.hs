@@ -65,12 +65,13 @@ module Main where
 
     -- Produces a list of valid mappings. idk if we can presume this to be 1?
     filterMappings' :: [(Int, Int)] -> [VarToValueMap] -> [VarToValueMap]
-    filterMappings' equalities vals = do out <- [ x | x <- vals, ifEq' x equalities == True]
-                                         return out
+    filterMappings' equalities vals = filter (ifEq' equalities) vals
+    --filterMappings' equalities vals = do out <- [ x | x <- vals, ifEq' x equalities == True]
+    --                                   return out
 
-    ifEq' :: VarToValueMap -> [(Int, Int)] -> Bool
-    ifEq' mapping [] = True
-    ifEq' mapping (x:xs)
+    ifEq' :: [(Int, Int)] -> VarToValueMap -> Bool
+    ifEq' [] mapping = True
+    ifEq' (x:xs) mapping
       | (Data.Map.Strict.lookup (fst x) mapping) == (Data.Map.Strict.lookup (snd x) mapping) = ifEq' mapping xs
       | otherwise = False
 
