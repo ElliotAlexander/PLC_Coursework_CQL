@@ -58,8 +58,8 @@ module Main where
     -- Outs = [Int]
     -- dataSourceMappings = [Map Int String]
     -- equalities = [(Int, Int)]
-    --filterMappings :: Mappings -> IO String
-    --filterMappings (Mapping outs dataSourceMappings equalities) = filterMappings' (equalities !! 0) dataSourceMappings
+    filterMappings :: Mappings -> Mappings
+    filterMappings (Mapping outs dataSourceMappings equalities) = (Mapping outs (filterMappings' equalities dataSourceMappings) equalities)
 
 
     filterMappings' :: [(Int, Int)] -> [VarToValueMap] -> [VarToValueMap]
