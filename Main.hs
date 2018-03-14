@@ -47,6 +47,18 @@ module Main where
     errorCheck :: ExpressionData -> ExpressionData
     errorCheck e = e
 
+
+    freeEqualitiesCheck :: ExpressionData -> Bool
+    --  Duplicates allowed
+    freeEqualitiesCheck (EData out ds equalities) = do equali_keys <- Data.List.union ([ x | x <- fst equalities]) ([ y | y <- snd equalities])
+                                                       varToColumns <- Data.Map.elems ds
+                                                       vars <- fmap (++) (fmap (Data.List.elems) (ds))
+                                                       return True
+
+
+    flattenMaps :: [VarToColumnMap] -> [Int]
+
+
     --here we are checking for implied equals through use of one variable coming from multiple files
     --also change instance to another variable
     --impliedEquals :: ExpressionData -> ExpressionData
