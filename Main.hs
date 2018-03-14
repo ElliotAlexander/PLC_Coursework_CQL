@@ -48,15 +48,13 @@ module Main where
     errorCheck e = e
 
 
-    freeEqualitiesCheck :: ExpressionData -> Bool
-    --  Duplicates allowed
-    freeEqualitiesCheck (EData out ds equalities) = do equali_keys <- Data.List.union ([ x | x <- fst equalities]) ([ y | y <- snd equalities])
-                                                       varToColumns <- Data.Map.elems ds
-                                                       vars <- fmap (++) (fmap (Data.List.elems) (ds))
-                                                       return True
+    freeEqualitiesCheck :: ExpressionData -> [Int]
+    freeEqualitiesCheck (EData out ds equalities) = do equali_keys <- Data.List.union ([ fst x | x <- equalities]) ([ snd y | y <- equalities])
+                                                       varToColumns <- concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
+                                                       return (equali_keys Data.List.\\ varToColumns)
+                                                       --return equali_keys
+                                                       --return varToColumns
 
-
-    flattenMaps :: [VarToColumnMap] -> [Int]
 
 
     --here we are checking for implied equals through use of one variable coming from multiple files
