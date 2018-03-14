@@ -219,7 +219,9 @@ module Main where
 
     assignVariables :: VarToColumnMap -> CSV -> [VarToValueMap]
     assignVariables _ [] = []
-    assignVariables vartocolumn (line:rest) = Data.Map.Strict.map (line !!) vartocolumn : assignVariables vartocolumn rest
+    assignVariables vartocolumn (line:rest)
+      | any (length line <=) $ elems vartocolumn = assignVariables vartocolumn rest
+      | otherwise = Data.Map.Strict.map (line !!) vartocolumn : assignVariables vartocolumn rest
 
     --just a test
     vartoall :: VarToAllValuesMap
