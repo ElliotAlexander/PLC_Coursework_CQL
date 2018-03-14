@@ -23,17 +23,20 @@ module Main where
     --not redefining this but just for reference
     --type FilePath = String
 
+
+    -- ==================================
+    --      Begin test cases
+    -- ==================================
+
     finalTest :: String
     finalTest = "1,3,2,4 where a(1,2) and b(3,4)"
-
-
-
--- Works
     onpTest :: String
     onpTest = "1,3,2,5 where a(1,2) and b(3,4)"
 
     fecTest :: String
     fecTest = "1,3,2,4 where a(1,2) and b(3,4) and 3=5"
+    --      End test cases
+    -- ==================================
 
     evaluate program = fmap (fmap lexicographicalOrdering) $ mappingToCSV $ filterMappings $ getMappings $ errorCheck $ express $ killme $ alexScanTokens program
 
