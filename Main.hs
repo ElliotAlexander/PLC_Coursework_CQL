@@ -53,7 +53,7 @@ module Main where
     --here we read the files and produce a list of possible maps of variables to string values
     --this also assumes no variables coming from two files
     getMappings :: ExpressionData -> Mappings
-    getMappings (EData outs datasources equalities) = Mapping outs (dataSourcesToMappings datasources) equalities
+    getMappings (EData outs datasources equalities) = Mapping outs (dataSourceMappings datasources) equalities
 
     --here we remove any mappings for which the equalities do not hold
 
@@ -126,26 +126,45 @@ module Main where
     --impliedEquals
 
     --getMappings
-    dataSourcesToMappings :: DataSources -> IO (Either ParseError [VarToValueMap])
-    dataSourcesToMappings datasources = do readColumns <- traverseWithKey dataSourceToMapping datasources
-                                           let columns = elems readColumns
-                                           let combined = combineEitherMaps columns
-                                           let result = fmap generateMappings combined
-                                           return result
+    --dataSourcesToMappings :: DataSources -> IO (Either ParseError [VarToValueMap])
+    --dataSourcesToMappings datasources = do readColumns <- traverseWithKey dataSourceToMapping datasources
+    --                                       let columns = elems readColumns
+    --                                       let combined = combineEitherMaps columns
+    --                                       let result = fmap generateMappings combined
+    --                                       return result
 
-    dataSourceToMapping :: FilePath -> VarToColumnMap -> IO (Either ParseError VarToAllValuesMap)
-    dataSourceToMapping file vartocolumn = do contents <- parseFromFile csvFile $ file ++ ".csv"
-                                              let result = fmap (getColumns vartocolumn) contents
-                                              return result
+    --dataSourceMappings :: DataSources -> IO(Either ParseError [VarToValueMap])
+    dataSourceMappings datasources = do sourced <- traverseWithKey readDataSource datasources
+                                        let filed = elems sourced
+                                        let result = cartProductMonadic filed
+                                        return result
 
-    getColumns :: VarToColumnMap -> CSV -> VarToAllValuesMap
-    getColumns vartocolumn csv = Data.Map.Strict.map (\col -> [line !! col | line <-csv]) vartocolumn
+    readDataSource :: FilePath -> VarToColumnMap -> IO (Either ParseError [VarToValueMap])
+    readDataSource filePath vartocolumn = do csv <- parseFromFile csvFile $ filePath ++ ".csv"
+                                             let assigned = fmap (assignVariables vartocolumn) csv
+                                             return assigned
 
-    combineEitherMaps :: [Either a1 (Map Int a)] -> Either a1 (Map Int a)
-    combineEitherMaps = Prelude.foldr (liftM2 Data.Map.Strict.union) (Right empty)
+    --cartProductMonadic :: [Either a [VarToValueMap]] -> [Either a VarToValueMap]
+    --cartProductMonadic [] =
+    --cartProductMonadic (x:xs) = liftM2 cartProduct' x (cartProductMonadic xs)
 
-    combineMaps :: Ord k => [Map k a] -> Map k a
-    combineMaps = Prelude.foldr Data.Map.Strict.union empty
+    cartProductMonadic xs = Data.List.foldr (liftM2 cartProduct') (Right [Data.Map.Strict.empty]) xs
+
+    cartProduct :: [[VarToValueMap]] -> [VarToValueMap]
+    cartProduct xs = Data.List.foldr cartProduct' [Data.Map.Strict.empty] xs
+
+    test1 :: [VarToValueMap]
+    test1 = [Data.Map.Strict.insert 1 "hi" $ Data.Map.Strict.insert 2 "ho" $ singleton 3 "hum",Data.Map.Strict.insert 1 "first" $ Data.Map.Strict.insert 2 "second" $ singleton 3 "third"]
+
+    test2 :: VarToValueMap
+    test2 = Data.Map.Strict.insert 4 "fuck" $ Data.Map.Strict.insert 5 "this" $ singleton 6 "shit"
+
+    cartProduct' :: [VarToValueMap] -> [VarToValueMap] -> [VarToValueMap]
+    cartProduct' xs ys = [Data.Map.Strict.union x y | x <- xs, y <-ys]
+
+    assignVariables :: VarToColumnMap -> CSV -> [VarToValueMap]
+    assignVariables _ [] = []
+    assignVariables vartocolumn (line:rest) = Data.Map.Strict.map (line !!) vartocolumn : assignVariables vartocolumn rest
 
     --just a test
     vartoall :: VarToAllValuesMap
