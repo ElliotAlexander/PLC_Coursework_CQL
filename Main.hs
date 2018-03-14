@@ -25,6 +25,7 @@ module Main where
     type VarToColumnMap = Map Int Int
     type VarToAllValuesMap = Map Int [String]
     type VarToValueMap = Map Int String
+    type DataSourceIntermediate = Map FilePath [Int]
     type DataSources = Map FilePath VarToColumnMap
     type Equalities = [(Int, Int)]
     type Output = [Int]
@@ -39,7 +40,7 @@ module Main where
 
     --this just makes the Expression more paletable
     express :: Exp -> ExpressionData
-    express (ExpNorm outputs preds) = EData (numbersToList outputs) (sources preds) (equal preds)
+    express (ExpNorm outputs preds) = EData (numbersToList outputs) (Data.Map.Strict.map listToMap (fst (impliedEquals preds))) (snd (impliedEquals preds))
 
     --here we check that variables needed for equality and output are actually sourced from a file
     --errorCheck :: ExpressionData -> ExpressionData
@@ -101,20 +102,42 @@ module Main where
     numbersToList (Number i next) = i : numbersToList next
     numbersToList (NumberEnd i) = [i]
 
-    sources :: Pred -> DataSources
-    sources mapIn = Data.Map.Strict.map varToColumnMapping $ sources' mapIn
+    impliedEquals :: Pred -> (DataSourceIntermediate, Equalities)
+    impliedEquals (PredSource file vars) = (Data.Map.Strict.singleton file $ numbersToList vars, [])
+    impliedEquals (PredAnd (PredSource file vars) p2)
+      | any (`elem` taken) listvars = (Data.Map.Strict.singleton file newvars `Data.Map.Strict.union` fst (impliedEquals p2), neweqs ++ snd (impliedEquals p2))
+                  | otherwise = (Data.Map.Strict.singleton file (numbersToList vars) `Data.Map.Strict.union` fst (impliedEquals p2), snd (impliedEquals p2))
+          where listvars = numbersToList vars
+                taken = bound p2
+                renamedStuff = rename taken listvars
+                newvars = fst renamedStuff
+                neweqs = snd renamedStuff
+    impliedEquals (PredAnd p1 p2) = (Data.Map.Strict.union ds1 ds2, eq1 ++ eq2)
+      where ds1 = fst $ impliedEquals p1
+            ds2 = fst $ impliedEquals p2
+            eq1 = snd $ impliedEquals p1
+            eq2 = snd $ impliedEquals p2
+    impliedEquals (PredEq a b) = (Data.Map.Strict.empty, [(a,b)])
 
-    sources' :: Pred -> Map String Numbers
-    sources' (PredAnd p1 p2) = sources' p1 `Data.Map.Strict.union` sources' p2
-    sources' (PredSource file out) = singleton file out
-    sources' (PredEq _ _) = empty
+    rename :: [Int] -> [Int] -> ([Int], [(Int,Int)])
+    --rename taken listvars
+    rename taken (x:xs)
+      | elem x taken = ([new] ++ fst (rename taken xs), [neweq] ++ snd (rename taken xs))
+            | otherwise = ([x] ++ fst (rename taken xs), snd (rename taken xs))
+        where new = head [y | y <- [0..], notElem y taken]
+              neweq = (x,new)
 
-    varToColumnMapping :: Numbers -> VarToColumnMap
-    varToColumnMapping = varToColumnMapping' 0
+    bound :: Pred -> [Int]
+    bound (PredAnd p1 p2) = bound p1 ++ bound p2
+    bound (PredSource _ vars) = numbersToList vars
+    bound (PredEq _ _) = []
 
-    varToColumnMapping' :: Int -> Numbers -> VarToColumnMap
-    varToColumnMapping' counter (Number i next) = Data.Map.Strict.insert i counter $ varToColumnMapping' (counter + 1) next
-    varToColumnMapping' counter (NumberEnd i) = singleton i counter
+    listToMap :: [Int] -> Map Int Int
+    listToMap xs = listToMap' xs 0
+
+    listToMap' :: [Int] -> Int -> Map Int Int
+    listToMap' [] _ = Data.Map.Strict.empty
+    listToMap' (x:xs) counter = Data.Map.Strict.singleton x counter `Data.Map.Strict.union` (listToMap' xs (counter + 1))
 
     equal :: Pred -> [(Int, Int)]
     equal (PredSource file out) = []
@@ -181,5 +204,5 @@ module Main where
     combinations (x:xs) ys = [x : y | y <- ys] ++ combinations xs ys
 
     --just a parsing test
-    test :: ExpressionData
-    test = express $ killme $ alexScanTokens "1,3,2,4 where a(1,2) and b(3,4) and 1 = 2"
+    --test :: ExpressionData
+    --test = express $ killme $ alexScanTokens "1,3,2,4 where a(1,2) and b(3,4) and 1 = 2"
