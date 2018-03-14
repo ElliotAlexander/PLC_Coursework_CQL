@@ -5,7 +5,7 @@
 %wrapper "posn"
 
 $digit = 1-9
-$alpha = [a-z]
+$alpha = [a-zA-Z]
 
 tokens :-
     $white+     ;
