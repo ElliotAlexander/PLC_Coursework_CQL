@@ -1,0 +1,60 @@
+#!/bin/bash
+
+executable="./myinterpreter"
+
+totalpassed=0
+for i in 1 2 3 4 5
+do
+	echo 
+	echo "*****************"
+	echo "*     pr $i     *"
+	echo "*****************"	
+	prog="pr$i.cql"
+	passed=0
+	echo 
+	echo "  ******************************"
+	echo "  *          test $i           *"
+	echo "  ******************************"
+	
+	testdir="pr"
+	testdir+=$i
+	testdir+="/"
+	out="youroutput.csv"
+
+	cp $executable $testdir
+	cp $prog $testdir 
+	cd $testdir 
+	#timeout 10s 
+	$executable $prog > $out 2>/dev/null
+
+	if [ "$?" = 124 ]; then
+		echo -e "  TEST FAILED -- TIMEOUT"
+	else
+		outofficial="out.csv" 
+
+		diff -wB $out $outofficial > /dev/null
+		if [ "$?" = 0 ]; then
+			passed=$((passed+1))
+			echo -e "  TEST PASSED" 
+		else
+			echo -e "  TEST FAILED" 
+			echo 
+			echo "  Your output:"
+			echo "  ------------"
+			cat $out | sed "s/^/  /"
+			echo
+			echo "  Correct output:"
+			echo "  ---------------"
+			cat $outofficial | sed "s/^/  /"
+			echo
+			fi
+		fi
+	echo 
+	echo "$passed tests passed for pr$i"
+	totalpassed=$((totalpassed+passed))
+	rm $executable 
+	rm $prog
+	rm $out
+	cd ..
+done
+echo "$totalpassed tests passed in total"
