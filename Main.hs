@@ -152,6 +152,7 @@ module Main where
 
     rename :: [Int] -> [Int] -> ([Int], [(Int,Int)])
     --rename taken listvars
+    rename _ [] = ([], [])
     rename taken (x:xs)
       | elem x taken = ([new] ++ fst (rename taken xs), [neweq] ++ snd (rename taken xs))
             | otherwise = ([x] ++ fst (rename taken xs), snd (rename taken xs))
