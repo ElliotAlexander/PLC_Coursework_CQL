@@ -48,12 +48,15 @@ module Main where
     errorCheck e = e
 
 
-    freeEqualitiesCheck :: ExpressionData -> [Int]
-    freeEqualitiesCheck (EData out ds equalities) = do equali_keys <- Data.List.union ([ fst x | x <- equalities]) ([ snd y | y <- equalities])
-                                                       varToColumns <- concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
-                                                       return (equali_keys Data.List.\\ varToColumns)
-                                                       --return equali_keys
-                                                       --return varToColumns
+    freeEqualitiesCheck :: ExpressionData -> Bool
+    freeEqualitiesCheck (EData out ds equalities)
+        | length intersect_list == length equali_keys = True
+        | otherwise = False
+        where
+          equali_keys = Data.List.union ([ fst x | x <- equalities]) ([ snd y | y <- equalities])
+          varToColumns = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
+          intersect_list = Data.List.intersect equali_keys varToColumns
+
 
 
 
