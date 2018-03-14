@@ -3,23 +3,30 @@ module Main where
     import Tokens
     import Text.ParserCombinators.Parsec
     import Data.CSV
+    import System.Environment
     -- Apparently we should use .strict if we're not thunking computation on larger data structures
     import Data.Map.Strict
     import Data.List
     import Control.Monad
 
     --main method for no real reason
-    main :: IO()
-    main = do
-        str <- readFile "input.meme"
-        --tokens <- alexScanTokens str
-        putStrLn str
-        --return
-        --return $ parseCalc tokens
+    --main :: IO()
+    main = do args <- getArgs
+              let progfile = head args
+              program <- readFile progfile
+              do result <- evaluate program
+                 case result of
+                   Left pe -> putStrLn ("Parse Error " ++ show pe)
+                   Right contents -> putStrLn contents
 
     --although we use FilePath the '.csv' is implied and not kept within the string
     --not redefining this but just for reference
     --type FilePath = String
+
+    finalTest :: String
+    finalTest = "1,3,2,4 where a(1,2) and b(3,4)"
+
+    evaluate program = fmap (fmap lexicographicalOrdering) $ mappingToCSV $ filterMappings $ getMappings $ errorCheck $ express $ killme $ alexScanTokens program
 
     type CSV = [[String]]
     type VarToColumnMap = Map Int Int
@@ -93,7 +100,7 @@ module Main where
 
     --here we produce a list of all possible outputs
     --mappingToCSV :: Mappings -> [[String]]
-    --mappingToCSV (Mapping outs dataSourceMappings equalities) =
+    mappingToCSV (Mapping outs dataSourceMappings _) = fmap (fmap (mappingToCSV' outs)) dataSourceMappings
 
 
 
@@ -106,8 +113,8 @@ module Main where
     testMaps = [fromList [(1,"first"), (3, "third"), (2, "second")]]
 
 
-    lexicographicalOrdering :: [[String]] -> [String]
-    lexicographicalOrdering xss = sort $ Data.List.map (intercalate ",") xss
+    lexicographicalOrdering :: [[String]] -> String
+    lexicographicalOrdering xss = intercalate "\n" $ sort $ Data.List.map (intercalate ",") xss
 
     --AUXILIARY FUNCTIONS
     --express
