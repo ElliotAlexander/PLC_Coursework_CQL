@@ -30,7 +30,7 @@ module Main where
     type Output = [Int]
 
     --dataflow:
-    --we go from Exp -> ExpressionData -> ExpressionData -> ExpressionData -> Mappings -> Mappings -> [[String]] -> [[String]]
+    --we go from Exp -> ExpressionData -> ExpressionData -> ExpressionData -> Mappings -> Mappings -> [[String]] -> [String]
     --functions are express, errorCheck, impliedEquals, getMappings, filterMappings, mappingToCSV, lexicographicalOrdering
 
     data ExpressionData = EData Output DataSources Equalities deriving Show
@@ -43,6 +43,8 @@ module Main where
 
     --here we check that variables needed for equality and output are actually sourced from a file
     --errorCheck :: ExpressionData -> ExpressionData
+    errorCheck :: ExpressionData -> ExpressionData
+    errorCheck e = e
 
     --here we are checking for implied equals through use of one variable coming from multiple files
     --also change instance to another variable
@@ -90,8 +92,8 @@ module Main where
     testMaps = [fromList [(1,"first"), (3, "third"), (2, "second")]]
 
 
-    lexicographicalOrdering :: [[String]] -> [[String]]
-    lexicographicalOrdering xs = fmap sort xs
+    lexicographicalOrdering :: [[String]] -> [String]
+    lexicographicalOrdering xss = sort $ Data.List.map (intercalate ",") xss
 
     --AUXILIARY FUNCTIONS
     --express
