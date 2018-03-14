@@ -53,7 +53,7 @@ module Main where
     outputNotPresentCheck :: ExpressionData -> Bool
     outputNotPresentCheck (EData out ds equalities)
       | length intersect_list == length out = True
-      | otherwise = False
+      | otherwise = error "Undeclared Variable inside output descriptors. Exiting"
       where
         declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
         intersect_list = Data.List.intersect out declared_vars
@@ -61,7 +61,7 @@ module Main where
     freeEqualitiesCheck :: ExpressionData -> Bool
     freeEqualitiesCheck (EData out ds equalities)
         | length intersect_list == length equalites_vars = True
-        | otherwise = False
+        | otherwise = error "Undeclared Variable inside Equality. Exiting"
         where
           equalites_vars = Data.List.union ([ fst x | x <- equalities]) ([ snd y | y <- equalities])
           declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
