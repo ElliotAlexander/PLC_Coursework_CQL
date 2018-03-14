@@ -36,7 +36,20 @@ Pred : Pred and Pred {PredAnd $1 $3}
 {
 
 parseError :: [Token] -> a
-parseError _ = error "Parse error"
+parseError xs = error $ readableError $ head xs
+
+readablePosition :: AlexPosn -> String
+readablePosition (AlexPn char line column) = "word " ++ show char ++ ", line " ++ show line ++ ", column " ++ show column
+
+readableError :: Token -> String
+readableError (TokenEq posn) = "Unexpected '=' at " ++ readablePosition posn
+readableError (TokenComma posn) = "Unexpected ',' at " ++ readablePosition posn
+readableError (TokenAnd posn) = "Unexpected 'and' at " ++ readablePosition posn
+readableError (TokenWhere posn) = "Unexpected 'where' at " ++ readablePosition posn
+readableError (TokenLBracket posn) = "Unexpected '(' at " ++ readablePosition posn
+readableError (TokenRBracket posn) = "Unexpected ')' at " ++ readablePosition posn
+readableError (TokenInt posn i) = "Unexpected '" ++ show i ++ "' at " ++ readablePosition posn
+readableError (TokenVar posn i) = "Unexpected '" ++ show i ++ "' at " ++ readablePosition posn
 
 data Exp = ExpNorm Numbers Pred deriving Show
 
