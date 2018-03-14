@@ -26,6 +26,15 @@ module Main where
     finalTest :: String
     finalTest = "1,3,2,4 where a(1,2) and b(3,4)"
 
+
+
+-- Works
+    onpTest :: String
+    onpTest = "1,3,2,5 where a(1,2) and b(3,4)"
+
+    fecTest :: String
+    fecTest = "1,3,2,4 where a(1,2) and b(3,4) and 3=5"
+
     evaluate program = fmap (fmap lexicographicalOrdering) $ mappingToCSV $ filterMappings $ getMappings $ errorCheck $ express $ killme $ alexScanTokens program
 
     type CSV = [[String]]
@@ -52,7 +61,12 @@ module Main where
     --here we check that variables needed for equality and output are actually sourced from a file
     --errorCheck :: ExpressionData -> ExpressionData
     errorCheck :: ExpressionData -> ExpressionData
-    errorCheck e = e
+    errorCheck e
+      | onp == True && fec == True = e
+      | otherwise = error "Error parsing expressions!"
+      where
+        onp = outputNotPresentCheck e
+        fec = freeEqualitiesCheck e
 
 
 
@@ -74,13 +88,6 @@ module Main where
           declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
           intersect_list = Data.List.intersect equalites_vars declared_vars
 
-
-
-
-
-    --here we are checking for implied equals through use of one variable coming from multiple files
-    --also change instance to another variable
-    --impliedEquals :: ExpressionData -> ExpressionData
 
     --here we read the files and produce a list of possible maps of variables to string values
     --this also assumes no variables coming from two files
