@@ -71,8 +71,8 @@ module Main where
     errorCheck :: ExpressionData -> ExpressionData
     errorCheck e
       | outputNotPresentCheck e && freeEqualitiesCheck e = e
-      -- This should never be called
-      | otherwise = error "Error parsing expressions!"
+      | not $ outputNotPresentCheck e = error "You have a variable in your output with no source."
+      | otherwise = error "You have an equality which refers to a variable with no source."
 
     outputNotPresentCheck :: ExpressionData -> Bool
     outputNotPresentCheck (EData out ds equalities)
