@@ -48,8 +48,9 @@ module Main where
     --      End test cases
     -- ==================================
 
-    evaluate program = fmap (fmap lexicographicalOrdering) $ mappingToCSV $ filterMappings $ getMappings $ errorCheck $ express $ killme $ alexScanTokens program
+    evaluate program = fmap (fmap lexicographicalOrdering) $ mappingToCSV $ filterMappings $ getMappings $ errorCheck $ express $ parseCql $ alexScanTokens program
 
+    --types we defined to make following stuff a bit easier
     type CSV = [[String]]
     type VarToColumnMap = Map Int Int
     type VarToAllValuesMap = Map Int [String]

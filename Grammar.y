@@ -6,19 +6,19 @@ import Tokens
 }
 
 
-%name killme
+%name parseCql
 %tokentype { Token }
 %error { parseError }
 %token
-    '='     { TokenEq _ } 
-    ','     { TokenComma _ } 
-    and     { TokenAnd _ } 
-    where   { TokenWhere _ } 
-    '('     { TokenLBracket _ } 
-    ')'     { TokenRBracket _ } 
+    '='     { TokenEq _ }
+    ','     { TokenComma _ }
+    and     { TokenAnd _ }
+    where   { TokenWhere _ }
+    '('     { TokenLBracket _ }
+    ')'     { TokenRBracket _ }
     int     { TokenInt _ $$ }
     var     { TokenVar _ $$ }
-    
+
 %right where
 %left and ','
 %nonassoc '(' ')'
