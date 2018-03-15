@@ -9,6 +9,13 @@ module Main where
     import Data.List
     import Control.Monad
 
+
+    -- Note that if youre trying to run this in GHCI, you'll need to enable
+    --
+    -- :set -XRankNTypes
+    --
+    -- inside each session
+
     --main method for no real reason
     --main :: IO()
     main = do args <- getArgs
@@ -30,6 +37,7 @@ module Main where
 
     finalTest :: String
     finalTest = "1,3,2,4 where a(1,2) and b(3,4)"
+
     onpTest :: String
     onpTest = "1,3,2,5 where a(1,2) and b(3,4)"
 
@@ -71,26 +79,22 @@ module Main where
         onp = outputNotPresentCheck e
         fec = freeEqualitiesCheck e
 
-
-
-    -- Both of these could probably be rewritten to output the variable causing the error
     outputNotPresentCheck :: ExpressionData -> Bool
     outputNotPresentCheck (EData out ds equalities)
-      | length intersect_list == length out = True
-      | otherwise = error "Undeclared Variable inside output descriptors. Exiting"
+      | length undeclared_list == 0 = True
+      | otherwise = error ("Undeclared Variable inside output descriptors. \nList of undeclared variables =: " ++ show undeclared_list)
       where
         declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
-        intersect_list = Data.List.intersect out declared_vars
+        undeclared_list = [ x | x <- out, not $ elem x declared_vars]
 
     freeEqualitiesCheck :: ExpressionData -> Bool
     freeEqualitiesCheck (EData out ds equalities)
-        | length intersect_list == length equalites_vars = True
-        | otherwise = error "Undeclared Variable inside Equality. Exiting"
+        | length undeclared_list == 0 = True
+        | otherwise = error ("Undeclared Variable inside Equality. \nList of undeclared variables=: " ++ show undeclared_list)
         where
           equalites_vars = Data.List.union ([ fst x | x <- equalities]) ([ snd y | y <- equalities])
           declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
-          intersect_list = Data.List.intersect equalites_vars declared_vars
-
+          undeclared_list = [ x | x <- equalites_vars, not $ elem x declared_vars]
 
     --here we read the files and produce a list of possible maps of variables to string values
     --this also assumes no variables coming from two files
