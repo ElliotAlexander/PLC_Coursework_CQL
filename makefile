@@ -1,4 +1,4 @@
 install:
 	alex Tokens.x
 	happy Grammar.y -o Grammar.hs
-	ghc -o -XRankNTypes Main Main.hs
+	ghc -XRankNTypes -o myinterpreter Main.hs
