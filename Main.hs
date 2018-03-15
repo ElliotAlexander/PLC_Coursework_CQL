@@ -80,8 +80,8 @@ module Main where
       | length undeclared_list == 0 = True
       | otherwise = error ("Undeclared Variable inside output descriptors. \nList of undeclared variables =: " ++ show undeclared_list)
       where
-        declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
-        undeclared_list = [ x | x <- out, x `notElem` declared_vars]
+        declared_vars = Data.List.concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
+        undeclared_list = [ x | x <- out, x `Data.List.notElem` declared_vars]
 
     freeEqualitiesCheck :: ExpressionData -> Bool
     freeEqualitiesCheck (EData out ds equalities)
@@ -89,7 +89,7 @@ module Main where
         | otherwise = error ("Undeclared Variable inside Equality. \nList of undeclared variables=: " ++ show undeclared_list)
         where
           equalites_vars = [ fst x | x <- equalities] `Data.List.union` [ snd y | y <- equalities]
-          declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
+          declared_vars = Data.List.concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
           undeclared_list = [ x | x <- equalites_vars, not $ Data.List.elem x declared_vars]
 
     --here we read the files and produce a list of possible maps of variables to string values
