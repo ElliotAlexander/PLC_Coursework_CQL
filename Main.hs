@@ -7,7 +7,7 @@ module Main where
     import Data.Map.Strict
     import Data.List
     import Control.Monad
-    import qualified Data.Foldable as Foldable
+    import Data.Foldable  
 
 
     -- Note that if youre trying to run this in GHCI, you'll need to enable
