@@ -11,12 +11,9 @@ module Main where
 
 
     -- Note that if youre trying to run this in GHCI, you'll need to enable
-    --
     -- :set -XRankNTypes
-    --
     -- inside each session
 
-    --main method for no real reason
     --main :: IO()
     main = do args <- getArgs
               let progfile = head args
@@ -43,6 +40,11 @@ module Main where
 
     fecTest :: String
     fecTest = "1,3,2,4 where a(1,2) and b(3,4) and 3=5"
+
+
+
+    testMaps :: [VarToValueMap]
+    testMaps = [fromList [(1,"first"), (3, "third"), (2, "second")]]
     --      End test cases
     -- ==================================
 
@@ -73,11 +75,9 @@ module Main where
     --errorCheck :: ExpressionData -> ExpressionData
     errorCheck :: ExpressionData -> ExpressionData
     errorCheck e
-      | onp == True && fec == True = e
+      | outputNotPresentCheck e && freeEqualitiesCheck e = e
+      -- This should never be called
       | otherwise = error "Error parsing expressions!"
-      where
-        onp = outputNotPresentCheck e
-        fec = freeEqualitiesCheck e
 
     outputNotPresentCheck :: ExpressionData -> Bool
     outputNotPresentCheck (EData out ds equalities)
@@ -102,18 +102,12 @@ module Main where
     getMappings (EData outs datasources equalities) = Mapping outs (dataSourceMappings datasources) equalities
 
     --here we remove any mappings for which the equalities do not hold
-
-    -- Outs = [Int]
-    -- dataSourceMappings = [Map Int String]
-    -- equalities = [(Int, Int)]
     filterMappings :: Mappings -> Mappings
     filterMappings (Mapping outs dataSourceMappings equalities) = Mapping outs (fmap (fmap (filterMappings' equalities)) dataSourceMappings) equalities
 
     -- Produces a list of valid mappings. idk if we can presume this to be 1?
     filterMappings' :: [(Int, Int)] -> [VarToValueMap] -> [VarToValueMap]
     filterMappings' equalities = Data.List.filter (ifEq' equalities)
-    --filterMappings' equalities vals = do out <- [ x | x <- vals, ifEq' x equalities == True]
-    --                                   return out
 
     ifEq' :: [(Int, Int)] -> VarToValueMap -> Bool
     ifEq' [] mapping = True
@@ -121,21 +115,12 @@ module Main where
       | Data.Map.Strict.lookup (fst x) mapping == Data.Map.Strict.lookup (snd x) mapping = ifEq' xs mapping
       | otherwise = False
 
-
-
     --here we produce a list of all possible outputs
     --mappingToCSV :: Mappings -> [[String]]
     mappingToCSV (Mapping outs dataSourceMappings _) = fmap (fmap (mappingToCSV' outs)) dataSourceMappings
 
-
-
-
     mappingToCSV' :: [Int] -> [VarToValueMap]-> [[String]]
     mappingToCSV' outputs xs = Data.List.map (\ x -> [x ! o | o <- outputs]) xs
-
-
-    testMaps :: [VarToValueMap]
-    testMaps = [fromList [(1,"first"), (3, "third"), (2, "second")]]
 
 
     lexicographicalOrdering :: [[String]] -> String
@@ -213,10 +198,6 @@ module Main where
                                              let assigned = fmap (assignVariables vartocolumn) csv
                                              return assigned
 
-    --cartProductMonadic :: [Either a [VarToValueMap]] -> [Either a VarToValueMap]
-    --cartProductMonadic [] =
-    --cartProductMonadic (x:xs) = liftM2 cartProduct' x (cartProductMonadic xs)
-
     cartProductMonadic xs = Data.List.foldr (liftM2 cartProduct') (Right [Data.Map.Strict.empty]) xs
 
     cartProduct :: [[VarToValueMap]] -> [VarToValueMap]
@@ -250,7 +231,3 @@ module Main where
     combinations xs [] = [[x] | x <- xs]
     combinations [] _ = []
     combinations (x:xs) ys = [x : y | y <- ys] ++ combinations xs ys
-
-    --just a parsing test
-    --test :: ExpressionData
-    --test = express $ killme $ alexScanTokens "1,3,2,4 where a(1,2) and b(3,4) and 1 = 2"
