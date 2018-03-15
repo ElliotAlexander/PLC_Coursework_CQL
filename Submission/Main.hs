@@ -7,7 +7,7 @@ module Main where
     import Data.Map.Strict
     import Data.List
     import Control.Monad
-    import Data.Foldable
+      import qualified Data.Foldable as Foldable
 
 
     -- Note that if youre trying to run this in GHCI, you'll need to enable
@@ -80,8 +80,8 @@ module Main where
       | length undeclared_list == 0 = True
       | otherwise = error ("Undeclared Variable inside output descriptors. \nList of undeclared variables =: " ++ show undeclared_list)
       where
-        declared_vars = Data.List.concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
-        undeclared_list = [ x | x <- out, x `Data.List.notElem` declared_vars]
+        declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
+        undeclared_list = [ x | x <- out, x `notElem` declared_vars]
 
     freeEqualitiesCheck :: ExpressionData -> Bool
     freeEqualitiesCheck (EData out ds equalities)
@@ -89,8 +89,8 @@ module Main where
         | otherwise = error ("Undeclared Variable inside Equality. \nList of undeclared variables=: " ++ show undeclared_list)
         where
           equalites_vars = [ fst x | x <- equalities] `Data.List.union` [ snd y | y <- equalities]
-          declared_vars = Data.List.concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
-          undeclared_list = [ x | x <- equalites_vars, not $ Data.List.elem x declared_vars]
+          declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
+          undeclared_list = [ x | x <- equalites_vars, not $ elem x declared_vars]
 
     --here we read the files and produce a list of possible maps of variables to string values
     --this also assumes no variables coming from two files
@@ -131,7 +131,7 @@ module Main where
     impliedEquals :: Pred -> (DataSourceIntermediate, Equalities)
     impliedEquals (PredSource file vars) = (Data.Map.Strict.singleton file $ numbersToList vars, [])
     impliedEquals (PredAnd (PredSource file vars) p2)
-      | Data.List.any (`Data.List.elem` taken) listvars = (Data.Map.Strict.singleton file newvars `Data.Map.Strict.union` fst (impliedEquals p2), neweqs ++ snd (impliedEquals p2))
+      | any (`elem` taken) listvars = (Data.Map.Strict.singleton file newvars `Data.Map.Strict.union` fst (impliedEquals p2), neweqs ++ snd (impliedEquals p2))
                   | otherwise = (Data.Map.Strict.singleton file (numbersToList vars) `Data.Map.Strict.union` fst (impliedEquals p2), snd (impliedEquals p2))
           where listvars = numbersToList vars
                 taken = bound p2
@@ -149,9 +149,9 @@ module Main where
     --rename taken listvars
     rename _ [] = ([], [])
     rename taken (x:xs)
-      | Data.List.elem x taken = (new : fst (rename taken xs), neweq : snd (rename taken xs))
+      | elem x taken = (new : fst (rename taken xs), neweq : snd (rename taken xs))
             | otherwise = (x : fst (rename taken xs), snd (rename taken xs))
-        where new = head [y | y <- [0..], y `Data.List.notElem` taken]
+        where new = head [y | y <- [0..], y `notElem` taken]
               neweq = (x,new)
 
     bound :: Pred -> [Int]
@@ -187,7 +187,7 @@ module Main where
     addLineBreak filePath = do contents <- readFile filePath
                                let finalChar = last contents
                                case finalChar of
-                                 '\n' -> print ""
+                                 '\n' -> print ()
                                  _ -> appendFile filePath "\n"
 
     cartProductMonadic :: Foldable t => t (Either a [VarToValueMap]) -> Either a [VarToValueMap]
@@ -202,5 +202,5 @@ module Main where
     assignVariables :: VarToColumnMap -> CSV -> [VarToValueMap]
     assignVariables _ [] = []
     assignVariables vartocolumn (line:rest)
-      | Data.List.any (length line <=) $ elems vartocolumn = assignVariables vartocolumn rest
+      | any (length line <=) $ elems vartocolumn = assignVariables vartocolumn rest
       | otherwise = Data.Map.Strict.map (line !!) vartocolumn : assignVariables vartocolumn rest
