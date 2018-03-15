@@ -4,7 +4,6 @@ module Main where
     import Text.ParserCombinators.Parsec
     import Data.CSV
     import System.Environment
-    -- Apparently we should use .strict if we're not thunking computation on larger data structures
     import Data.Map.Strict
     import Data.List
     import Control.Monad
@@ -14,7 +13,7 @@ module Main where
     -- :set -XRankNTypes
     -- inside each session
 
-    --main :: IO()
+    main :: IO()
     main = do args <- getArgs
               let progfile = head args
               program <- readFile progfile
@@ -22,11 +21,6 @@ module Main where
                  case result of
                    Left pe -> putStrLn ("Parse Error " ++ show pe)
                    Right contents -> putStrLn contents
-
-    --although we use FilePath the '.csv' is implied and not kept within the string
-    --not redefining this but just for reference
-    --type FilePath = String
-
 
     -- ==================================
     --      Begin test cases
@@ -61,7 +55,7 @@ module Main where
     type Output = [Int]
 
     --dataflow:
-    --we go from Exp -> ExpressionData -> ExpressionData -> ExpressionData -> Mappings -> Mappings -> [[String]] -> [String]
+    --we go from Exp -> ExpressionData -> ExpressionData -> ExpressionData -> Mappings -> Mappings -> [[String]] -> String
     --functions are express, errorCheck, impliedEquals, getMappings, filterMappings, mappingToCSV, lexicographicalOrdering
 
     data ExpressionData = EData Output DataSources Equalities deriving Show
@@ -86,14 +80,14 @@ module Main where
       | otherwise = error ("Undeclared Variable inside output descriptors. \nList of undeclared variables =: " ++ show undeclared_list)
       where
         declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
-        undeclared_list = [ x | x <- out, not $ elem x declared_vars]
+        undeclared_list = [ x | x <- out, x `notElem` declared_vars]
 
     freeEqualitiesCheck :: ExpressionData -> Bool
     freeEqualitiesCheck (EData out ds equalities)
         | length undeclared_list == 0 = True
         | otherwise = error ("Undeclared Variable inside Equality. \nList of undeclared variables=: " ++ show undeclared_list)
         where
-          equalites_vars = Data.List.union ([ fst x | x <- equalities]) ([ snd y | y <- equalities])
+          equalites_vars = [ fst x | x <- equalities] `Data.List.union` [ snd y | y <- equalities]
           declared_vars = concat (fmap (Data.Map.Strict.keys) (Data.Map.Strict.elems ds))
           undeclared_list = [ x | x <- equalites_vars, not $ elem x declared_vars]
 
@@ -106,7 +100,7 @@ module Main where
     filterMappings :: Mappings -> Mappings
     filterMappings (Mapping outs dataSourceMappings equalities) = Mapping outs (fmap (fmap (filterMappings' equalities)) dataSourceMappings) equalities
 
-    -- Produces a list of valid mappings. idk if we can presume this to be 1?
+    -- filters mappings based on the equalities
     filterMappings' :: [(Int, Int)] -> [VarToValueMap] -> [VarToValueMap]
     filterMappings' equalities = Data.List.filter (ifEq' equalities)
 
@@ -117,7 +111,7 @@ module Main where
       | otherwise = False
 
     --here we produce a list of all possible outputs
-    --mappingToCSV :: Mappings -> [[String]]
+    mappingToCSV :: Mappings -> IO (Either ParseError [[String]])
     mappingToCSV (Mapping outs dataSourceMappings _) = fmap (fmap (mappingToCSV' outs)) dataSourceMappings
 
     mappingToCSV' :: [Int] -> [VarToValueMap]-> [[String]]
@@ -154,9 +148,9 @@ module Main where
     --rename taken listvars
     rename _ [] = ([], [])
     rename taken (x:xs)
-      | elem x taken = ([new] ++ fst (rename taken xs), [neweq] ++ snd (rename taken xs))
-            | otherwise = ([x] ++ fst (rename taken xs), snd (rename taken xs))
-        where new = head [y | y <- [0..], notElem y taken]
+      | elem x taken = (new : fst (rename taken xs), neweq : snd (rename taken xs))
+            | otherwise = (x : fst (rename taken xs), snd (rename taken xs))
+        where new = head [y | y <- [0..], y `notElem` taken]
               neweq = (x,new)
 
     bound :: Pred -> [Int]
@@ -169,46 +163,37 @@ module Main where
 
     listToMap' :: [Int] -> Int -> Map Int Int
     listToMap' [] _ = Data.Map.Strict.empty
-    listToMap' (x:xs) counter = Data.Map.Strict.singleton x counter `Data.Map.Strict.union` (listToMap' xs (counter + 1))
+    listToMap' (x:xs) counter = Data.Map.Strict.singleton x counter `Data.Map.Strict.union` listToMap' xs (counter + 1)
 
     equal :: Pred -> [(Int, Int)]
     equal (PredSource file out) = []
     equal (PredEq a b) = [(a,b)]
     equal (PredAnd p1 p2) = equal p1 ++ equal p2
 
-    --errorCheck
-
-    --impliedEquals
-
-    --getMappings
-    --dataSourcesToMappings :: DataSources -> IO (Either ParseError [VarToValueMap])
-    --dataSourcesToMappings datasources = do readColumns <- traverseWithKey dataSourceToMapping datasources
-    --                                       let columns = elems readColumns
-    --                                       let combined = combineEitherMaps columns
-    --                                       let result = fmap generateMappings combined
-    --                                       return result
-
-    --dataSourceMappings :: DataSources -> IO(Either ParseError [VarToValueMap])
+    dataSourceMappings :: DataSources -> IO (Either ParseError [VarToValueMap])
     dataSourceMappings datasources = do sourced <- traverseWithKey readDataSource datasources
                                         let filed = elems sourced
                                         let result = cartProductMonadic filed
                                         return result
 
     readDataSource :: FilePath -> VarToColumnMap -> IO (Either ParseError [VarToValueMap])
-    readDataSource filePath vartocolumn = do csv <- parseFromFile csvFile $ filePath ++ ".csv"
+    readDataSource filePath vartocolumn = do addLineBreak $ filePath ++ ".csv"
+                                             csv <- parseFromFile csvFile $ filePath ++ ".csv"
                                              let assigned = fmap (assignVariables vartocolumn) csv
                                              return assigned
 
+    addLineBreak :: FilePath -> IO ()
+    addLineBreak filePath = do contents <- readFile filePath
+                               let finalChar = last contents
+                               case finalChar of
+                                 '\n' -> print ()
+                                 _ -> appendFile filePath "\n"
+
+    cartProductMonadic :: Foldable t => t (Either a [VarToValueMap]) -> Either a [VarToValueMap]
     cartProductMonadic xs = Data.List.foldr (liftM2 cartProduct') (Right [Data.Map.Strict.empty]) xs
 
     cartProduct :: [[VarToValueMap]] -> [VarToValueMap]
     cartProduct xs = Data.List.foldr cartProduct' [Data.Map.Strict.empty] xs
-
-    test1 :: [VarToValueMap]
-    test1 = [Data.Map.Strict.insert 1 "hi" $ Data.Map.Strict.insert 2 "ho" $ singleton 3 "hum",Data.Map.Strict.insert 1 "first" $ Data.Map.Strict.insert 2 "second" $ singleton 3 "third"]
-
-    test2 :: VarToValueMap
-    test2 = Data.Map.Strict.insert 4 "fuck" $ Data.Map.Strict.insert 5 "this" $ singleton 6 "shit"
 
     cartProduct' :: [VarToValueMap] -> [VarToValueMap] -> [VarToValueMap]
     cartProduct' xs ys = [Data.Map.Strict.union x y | x <- xs, y <-ys]
@@ -218,17 +203,3 @@ module Main where
     assignVariables vartocolumn (line:rest)
       | any (length line <=) $ elems vartocolumn = assignVariables vartocolumn rest
       | otherwise = Data.Map.Strict.map (line !!) vartocolumn : assignVariables vartocolumn rest
-
-    --just a test
-    vartoall :: VarToAllValuesMap
-    vartoall = Data.Map.Strict.insert 1 ["test", "me"] (singleton 2 ["work", "now"])
-
-    --generates possible mappings
-    generateMappings :: Ord k => Map k [v] -> [Map k v]
-    generateMappings x = Prelude.map fromList $ Prelude.foldr (combinations . (\ pair -> [(fst pair, val) | val <- snd pair])) [] $ assocs x
-
-    --recursive combiner
-    combinations :: [a] -> [[a]] -> [[a]]
-    combinations xs [] = [[x] | x <- xs]
-    combinations [] _ = []
-    combinations (x:xs) ys = [x : y | y <- ys] ++ combinations xs ys
