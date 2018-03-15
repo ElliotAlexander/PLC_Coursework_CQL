@@ -187,7 +187,7 @@ module Main where
     addLineBreak filePath = do contents <- readFile filePath
                                let finalChar = last contents
                                case finalChar of
-                                 '\n' -> print ()
+                                 '\n' -> print ""
                                  _ -> appendFile filePath "\n"
 
     cartProductMonadic :: t (Either a [VarToValueMap]) -> Either a [VarToValueMap]
