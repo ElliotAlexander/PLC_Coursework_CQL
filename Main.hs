@@ -190,7 +190,7 @@ module Main where
                                  '\n' -> print ()
                                  _ -> appendFile filePath "\n"
 
-    cartProductMonadic :: Foldable t => t (Either a [VarToValueMap]) -> Either a [VarToValueMap]
+    cartProductMonadic :: t (Either a [VarToValueMap]) -> Either a [VarToValueMap]
     cartProductMonadic xs = Data.List.foldr (liftM2 cartProduct') (Right [Data.Map.Strict.empty]) xs
 
     cartProduct :: [[VarToValueMap]] -> [VarToValueMap]
