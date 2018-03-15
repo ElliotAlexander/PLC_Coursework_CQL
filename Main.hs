@@ -9,7 +9,6 @@ module Main where
     import Control.Monad
     import Data.Foldable
 
-
     -- Note that if youre trying to run this in GHCI, you'll need to enable
     -- :set -XRankNTypes
     -- inside each session
