@@ -22,3 +22,9 @@ cabal.project.local
 Tokens\.hs
 
 Grammar\.hs
+
+*.aux
+*.log
+*.bbl
+*.blg
+*.exe
