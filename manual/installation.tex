@@ -1,0 +1,82 @@
+\section{Hello World - an introduction to the syntax}
+CQL is strictly a language designed to implement conjunctive queries on local data, so a hello world program may appear slightly odd, however in this section the syntax of the language will be introduced. 
+
+
+\subsection{Writing your first program}
+At it's core, CQL allows the selection and manipulation of data in CSV files. In this first example program, we'll be loading data from two CSV files, P.csv and Q.csv, and outputting all rows in the file where the first value of each row is equal. For example, given two CSV files:\\\\
+
+
+%% Note that box names are hard coded here - otherwise we get programs/P.csv and programs/Q.csv.
+% we could maybe fix this
+
+\setbox0=\hbox{%
+\begin{minipage}{1.9in}
+\lstinputlisting[
+basicstyle={\ttfamily},
+identifierstyle={\color{black}},
+tabsize=2,
+numbersep=8pt,
+numbers=left,
+title=P.csv,
+xleftmargin=0.5cm,
+frame=tlbr,
+framesep=2pt,
+framerule=0pt,
+morekeywords ={class,run}
+]{P.csv}
+\end{minipage}
+}
+\savestack{\listingA}{\box0}
+
+\setbox0=\hbox{%
+\begin{minipage}{1.9in}
+\lstinputlisting[
+basicstyle={\ttfamily},
+identifierstyle={\color{black}},
+tabsize=2,
+numbersep=8pt,
+numbers=left,
+title=Q.csv,
+xleftmargin=0.5cm,frame=tlbr,framesep=2pt,framerule=0pt,
+morekeywords ={class,run}
+]{Q.csv}
+\end{minipage}
+}
+\savestack{\listingB}{\box0}
+
+\begin{tabular}{|c|c|}
+\hline
+\stackinset{l}{-5pt}{t}{}{}{\listingA} &
+\stackinset{l}{-5pt}{t}{}{}{\listingB} \\
+\hline
+\end{tabular}
+\newline
+\begin{normalsize}
+\newline We can use the equality operator \codeword{=} to output only rows where P.csv and Q.csv have the same value. We will introduce the full syntax for conjunctive queries later, but formally this is written as:
+$$
+	x_1, x_2 \vdash P(x_1) \land Q(x_2) \land x_1 = x_2 
+$$
+In order to implement this in CQL, we need a program as below:
+\lstinputlisting[style=framed]{HelloWorld.cql}
+Now that we've got an extremely simple first program, we can begin to run programs using our interpreter.
+\end{normalsize}
+\subsection{Running your first program}
+\begin{normalsize}
+CQL programs are saved with the file extension \textbf{.cql}, and are run by placing the executable interpreter in the same directory as your data (in the form of .CSV files), and executing your program as:
+\begin{lstlisting}
+	CQL.exe HelloWorld.cql
+\end{lstlisting}
+Where CQL.exe is the name of your executable, and HelloWorld.cql the name of your program we wrote in section 2.1. Note that on Unix based systems, running the executable will have the syntax:
+\begin{lstlisting}
+	$./CQL HelloWorld.cql
+\end{lstlisting}
+If all goes well, we should be expecting an output identical to the one below; if your program throws errors, some common troubleshooting steps are ensuring that the CSV files, CQL programs and executable are all in the same directory, and that your executable has executable permission on Unix based systems. 
+\end{normalsize}
+\begin{lstlisting}[style=framed]
+1,1
+2,2
+2,2
+\end{lstlisting}
+\begin{normalsize}
+Congratulations! You've run and executed your first CQL program. 
+\end{normalsize}
