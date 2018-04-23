@@ -1,5 +1,6 @@
 \documentclass{article}
 
+
     \usepackage{graphicx}
     \usepackage{wrapfig}
     \usepackage{lscape}
@@ -8,9 +9,53 @@
     \usepackage{float}
     \usepackage{listings}
     \usepackage{courier}
+    \usepackage[T1]{fontenc}
+	\usepackage[latin9]{inputenc}
+	\usepackage{listings}
+	\usepackage{stackengine}
+	\usepackage{xcolor}
+	\usepackage{xparse}
+	
+	\usepackage{color}
+	\newlength\llength
+	\llength=1.38ex\relax
+	
+
+	\lstdefinestyle{framed}{
+		breaklines,
+		frame=single,
+		tabsize=2,
+		numberstyle=\footnotesize,
+		commentstyle=\color{mygreen},
+		numbers=left,
+		showstringspaces=false
+		basicstyle={\ttfamily},
+		identifierstyle={\color{black}},
+		numbersep=8pt,
+		xleftmargin=0.5cm,
+		framexleftmargin=1.5em,
+		%% thanks to color
+		commentstyle=\color{mygreen},
+		%% Define keywords manually
+		keywordstyle=\color{blue},
+		morekeywords ={where,and}
+	}
+	
+	
+	\lstset{inputpath=programs/}
+	
+
+
+	\NewDocumentCommand{\codeword}{v}{%
+	\texttt{\textcolor{blue}{#1}}%
+	}
+
+	\lstset{keywordstyle={\bfseries \color{blue}}}
+
     
     \begin{document}
     \include{titlepage}
     \include{introduction}
+    \include{installation}
     \end{document}
     
