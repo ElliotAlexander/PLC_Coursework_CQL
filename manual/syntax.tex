@@ -1,0 +1,20 @@
+\section{Syntax}
+\begin{normalsize}
+CQL is designed to replicate the expressive power of conjunctive queries, and as such the syntax can largely be mirrored in the language of \textit{conjunctive queries}. In this section we will expand on this relationship, in addition to exploring the syntax and briefly looking at some programmer friendly features within the syntax.
+
+\subsection{Commenting}
+
+Commenting is supported within CQL, with syntactic sugar offered with the dual style. Both \codeword{//} and \codeword{#} are acceptable commenting styles.
+\begin{lstlisting}[style=framed]
+// This is a comment
+This is not
+
+#This is also a comment
+This is not
+\end{lstlisting}
+CQL also supports in line commenting. For example:
+\begin{lstlisting}[style=framed]
+1,2,3 where A(1,2) and B(2,3) // This is an end of line comment
+1,2 where P(1) and Q(2) and 1 = 2  # This is also an end of line comment.
+\end{lstlisting}
+\end{normalsize}
