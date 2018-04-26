@@ -17,4 +17,14 @@ CQL also supports in line commenting. For example:
 1,2,3 where A(1,2) and B(2,3) // This is an end of line comment
 1,2 where P(1) and Q(2) and 1 = 2  # This is also an end of line comment.
 \end{lstlisting}
+
+
+\subsection{Formula Judgements}
+Judgements are assertations in mathematical logic, in this case the occurrence of a free variable in an expression. \textit{Conjunctive queries} use formula judgements to list all free variables in an expression E, formally defined as:
+$$ \overrightarrow{x} \vdash \varphi $$
+Where $\overrightarrow{x}$ is a list of all free variables used in a program $\varphi$.  In CQL, this syntax is replicated with:
+\begin{lstlisting}[style=framed]
+x,y where P(x) and Q(y) = z
+\end{lstlisting}
+Where $x$, $y$ are free variables in the expression \lstinline!P(x) and Q(y)!. Note that equalities cannot reference free variables. For example, given the above example, $z$ cannot be included as a free variable (for example: \lstinline[style=framed]!x,y,z where P(x) and Q(y) = z!). 
 \end{normalsize}
