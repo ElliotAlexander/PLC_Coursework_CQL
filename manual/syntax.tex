@@ -34,7 +34,7 @@ In the case that a variable is declared inside a judgement but never called insi
 ./CQL: Undeclared variables inside output descriptors.
 List of undeclared variables =: [2]
 \end{lstlisting}
-Variables declared inside relations but note declared inside judgements will be considered free.
+Variables declared inside relations but not declared inside judgements are considered existentially qualified, and can be used in equalities. See \textbf{Section 3.4} for more on this.
 
 \subsubsection{Undeclared variables inside Equalities}
 In order for a variable to be used inside an equality, it must either be declared inside a relation (at which point it becomes existentially qualified), or bound inside a judgement. For example: \lstinline!1,2 where a(1,2) and 1 = 3! will throw the below error, as 3 remains free:
@@ -44,7 +44,7 @@ List of undeclared variables := [3]
 \end{lstlisting}
 
 \subsection{Relations}
-Relations in \textit{Conjunctive Queries} use an identical syntax to CQL, except while relations in Conjunctive Queries represent Atomic formula, CQL relations represent the accessing of data from .CSV files.  Each variable defined in a CQL relation mirrors onto a column in the referenced CSV, for example, \codeword{A(x,y)} where x is a free variable and y is bound, would output all values in the second column of \codeword{a.csv}. 
+Relations in \textit{Conjunctive Queries} use an identical syntax to CQL, except that while relations in \textit{Conjunctive Queries} represent Atomic formula, CQL relations represent the accessing of data from .CSV files.  Each variable defined in a CQL relation mirrors onto a column in the referenced CSV, for example, \codeword{A(1,2)} where \codeword{1} is a free variable and \codeword{2} is bound, would output all values in the second column of \codeword{a.csv}. 
 
 \subsubsection{File not found errors}
 Noting that CSV file names are case sensitive. If a relation attempts to access a file that cannot be loaded, for example \lstinline!1 where A(1)!, the interrpreter will output as below:
@@ -53,7 +53,7 @@ Noting that CSV file names are case sensitive. If a relation attempts to access 
 \end{lstlisting}
 
 \subsubsection{Empty rows}
-CQL handles empty rows by outputting an empty pair of double quotes. For example, given the above statement \lstinline!x where A(x,y)! and a CSV file:
+CQL handles empty rows by outputting an empty pair of double quotes. For example, given the above statement \lstinline!1 where A(1,2)! and a CSV file:
 \begin{lstlisting}[style=framed]
 a,
 b,c
@@ -118,21 +118,18 @@ This, written in CQL, is equivalent to:
 \begin{lstlisting}[style=framed]
 1 where R(1,2)
 \end{lstlisting}
-Where 2 is declared existentially, i.e. 'There exists' some value of 2, the value of which we don't care about. It is also important to note that we can combine existential qualification with logical conjunction (AND), however we will address this in \textbf{Section 3.5}
+Where 2 is declared existentially, i.e. 'There exists' some value of 2, the value of which we don't care about. It is also important to note that we can combine existential qualification with logical conjunction (AND), however we will address this in \textbf{Section 3.5}. Existentially qualified variables may also be used in equalities, although care should be taken not to confuse existentially qualified variables (those defined in Relations but not Judgements) with pure free variables (those only defined inside equalities, or not at all). Attempting to use purely free variables inside equalities will result in a \codeword{
 
 
 \subsection{Logical conjunction}
-Logical conjunction a is provided within CQL using the \codeword{and} keyword. Simply, logical conjunction can be applied between relational symbols. Formally:
+Logical conjunction (formally $\land$) is provided within CQL using the \codeword{and} keyword. Simply, logical conjunction can be applied between relational symbols and/or equalities outside of bound variable assertions. Formally:
 $$x_1, x_2, x_3, x_4 \vdash A(x_1, x_2)  \land B(x_3, x_4)$$
-
+In CQL, the syntax is reasonably self explanatory.
 \begin{lstlisting}[style=framed]
 1,2,3,4 where A(1,2) and B(3,4)
 \end{lstlisting}
-
-In this statement, 1 and 2 are declared, and 3 forms an existential qualification. Only rows where the second column are equal will be outputted. The second column will not be outputted, as 3 is not a bound variable. 
-
 \subsection{Equalities}
-Equalities are briefly touched upon in the 'Hello World' section of this document (See 2.1), however equalities will be expanded further here. Equalities in CQL mirror the syntax of conjunctive queries and use the equality operator (\codeword{=}). Equalities act as statements of their own, meaning they must be paired with an \codeword{and} statement (see 3.5 - Logical Conjunction). For example:
+Equalities are briefly touched upon in the 'Hello World' section of this document (See \textbf{Section 2.1}), however equalities will be expanded upon further here. Equalities in CQL mirror the syntax of conjunctive queries and use the equality operator (\codeword{=}). Equalities act as statements of their own, meaning they must be paired with an \codeword{and} statement in addition to a relation (see \textbf{Section 3.5 - Logical Conjunction} and \textbf{Section 3.3 - Relations}). For example:
 \begin{lstlisting}[style=framed]
 1,2 where P(1) and Q(2) and 1 = 2
 \end{lstlisting}

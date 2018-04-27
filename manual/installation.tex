@@ -3,7 +3,7 @@ CQL is strictly a language designed to implement conjunctive queries on local da
 
 
 \subsection{Writing your first program}
-At it's core, CQL allows the selection of data in CSV files. In this first example program, we'll be loading data from two CSV files, P.csv and Q.csv, and outputting all rows in the file where the first value of each row is equal. For example, given two CSV files:
+At it's core, CQL allows the selection of data in CSV files. In this example program, we'll be loading data from two CSV files, P.csv and Q.csv, and outputting all rows in the file where the first value of each row is equal. Given two CSV files:
 
 
 \setbox0=\hbox{%
@@ -60,15 +60,15 @@ Now that we've got an extremely simple first program, we can begin to run progra
 \end{normalsize}
 \subsection{Running your first program}
 \begin{normalsize}
-CQL programs are saved with the file extension \textbf{.cql}, and are run by placing the executable interpreter in the same directory as your data (in the form of .CSV files), and executing your program as:
+CQL programs are saved with the file extension \textbf{.cql}, and can be run by placing the executable interpreter in the same directory as your data (in the form of .CSV files), and executing your program as:
 \begin{lstlisting}
 	$./CQL HelloWorld.cql
 \end{lstlisting}
-Where CQL.exe is the name of your executable, and HelloWorld.cql the name of your program we wrote in section 2.1. Note that on Windows based systems, running the executable will have the syntax:
+Where CQL.exe is the name of your executable, and HelloWorld.cql the name of your program. Note that on Windows systems, running the executable will have the syntax:
 \begin{lstlisting}
 	CQL.exe HelloWorld.cql
 \end{lstlisting}
-If all goes well, we should be expecting an output identical to the one below; if your program throws errors, some common troubleshooting steps are ensuring that the CSV files, CQL programs and executable are all in the same directory, and that your executable has executable permission on Unix based systems. 
+If all goes well, there should be an output identical to the one below; if your program throws errors, some common troubleshooting steps are ensuring that the CSV files, CQL programs and executable are all in the same directory, and that your executable has executable permission on Unix based systems. There are also some descriptions of common errors in \textbf{Sections 3 and 4}.
 \end{normalsize}
 \begin{lstlisting}[style=framed]
 1,1
