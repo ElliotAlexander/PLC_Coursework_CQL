@@ -118,7 +118,7 @@ This, written in CQL, is equivalent to:
 \begin{lstlisting}[style=framed]
 1 where R(1,2)
 \end{lstlisting}
-Where 2 is declared existentially, i.e. 'There exists' some value of 2, the value of which we don't care about. It is also important to note that we can combine existential qualification with logical conjunction (AND), however we will address this in \textbf{Section 3.5}. Existentially qualified variables may also be used in equalities, although care should be taken not to confuse existentially qualified variables (those defined in Relations but not Judgements) with pure free variables (those only defined inside equalities, or not at all). Attempting to use purely free variables inside equalities will result in a \codeword{
+Where 2 is declared existentially, i.e. 'There exists' some value of 2, the value of which we don't care about. It is also important to note that we can combine existential qualification with logical conjunction (AND), however we will address this in \textbf{Section 3.5}. Existentially qualified variables may also be used in equalities, although care should be taken not to confuse existentially qualified variables (those defined in Relations but not Judgements) with pure free variables (those only defined inside equalities, or not at all). Attempting to use purely free variables inside equalities will result in an \codeword{Undeclared variables inside Equalities} error.
 
 
 \subsection{Logical conjunction}
