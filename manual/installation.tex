@@ -3,11 +3,8 @@ CQL is strictly a language designed to implement conjunctive queries on local da
 
 
 \subsection{Writing your first program}
-At it's core, CQL allows the selection and manipulation of data in CSV files. In this first example program, we'll be loading data from two CSV files, P.csv and Q.csv, and outputting all rows in the file where the first value of each row is equal. For example, given two CSV files:\\\\
+At it's core, CQL allows the selection of data in CSV files. In this first example program, we'll be loading data from two CSV files, P.csv and Q.csv, and outputting all rows in the file where the first value of each row is equal. For example, given two CSV files:
 
-
-%% Note that box names are hard coded here - otherwise we get programs/P.csv and programs/Q.csv.
-% we could maybe fix this
 
 \setbox0=\hbox{%
 \begin{minipage}{1.9in}
@@ -44,15 +41,16 @@ morekeywords ={class,run}
 }
 \savestack{\listingB}{\box0}
 
+\begin{center}
 \begin{tabular}{|c|c|}
 \hline
-\stackinset{l}{-5pt}{t}{}{}{\listingA} &
-\stackinset{l}{-5pt}{t}{}{}{\listingB} \\
+\stackinset{c}{5pt}{t}{}{}{\listingA} &
+\stackinset{c}{5pt}{t}{}{}{\listingB} \\
 \hline
 \end{tabular}
-\newline
+\end{center}
 \begin{normalsize}
-\newline We can use the equality operator \codeword{=} to output only rows where P.csv and Q.csv have the same value. We will introduce the full syntax for conjunctive queries later, but formally this is written as:
+We can use the equality operator \codeword{=} to output only rows where P.csv and Q.csv have the same value. We will introduce the full syntax for conjunctive queries later, but formally this is written as:
 $$
 	x_1, x_2 \vdash P(x_1) \land Q(x_2) \land x_1 = x_2 
 $$
@@ -78,5 +76,5 @@ If all goes well, we should be expecting an output identical to the one below; i
 2,2
 \end{lstlisting}
 \begin{normalsize}
-Congratulations! You've run and executed your first CQL program. 
+Congratulations! You've executed your first CQL program. 
 \end{normalsize}
