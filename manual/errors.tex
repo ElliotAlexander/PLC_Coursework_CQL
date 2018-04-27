@@ -1,0 +1,5 @@
+\section{Parser Errors}
+In the case that the parser fails to interpret a program, an error message containing both the line number, character in question and  column will be outputted. For example, given a statement missing an \codeword{and}: \lstinline!1,2 where a(1,2) 1 = 2!, the error message will be:
+\begin{lstlisting}[style=framed]
+CQL: Unexpected '1' at word 29, line 1, column 30
+\end{lstlisting}.
