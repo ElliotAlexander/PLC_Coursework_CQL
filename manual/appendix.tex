@@ -3,22 +3,32 @@
 \subsection{Example Programs}
 
 \subsubsection{Program 1}
+$$x_1, x_2, x_3, x_4 \vdash A(x_1, x_2) \land B(x_3, x_4)$$
 \lstinputlisting[style=framed]{pr1.cql}
 \subsubsection{Program 2}
+$$x_1,x _2, x_3 \vdash A(x_1, x_2) \land B(x_2, x_3)$$
 \lstinputlisting[style=framed]{pr2.cql}
 \subsubsection{Program 3}
+$$x_1, x_2 \vdash P(x_1) \land Q(x_2) \land x_1 = x_2 $$
 \lstinputlisting[style=framed]{pr3.cql}
 \subsubsection{Program 4}
+$$x_1 \vdash \exists z.R(x_1,z)$$
 \lstinputlisting[style=framed]{pr4.cql}
 \subsubsection{Program 5}
+$$x_1,x_2 \vdash \exists z.A(x_1, z) \land B(z,x_2)$$
 \lstinputlisting[style=framed]{pr5.cql}
 \subsubsection{Program 6}
+$$x_1 \vdash R(x_1) \land \exists z.S(z)$$
 \lstinputlisting[style=framed]{pr6.cql}
 \subsubsection{Program 7}
+$$x_1, x_2 \vdash \exists z_1.\exists z_2.R(x_1, z_1) \land R(z_1, z_2) \land R(z_2, x_2)$$
 \lstinputlisting[style=framed]{pr8.cql}
 \subsubsection{Program 8}
+$$x_1, x_2, x_3, x_4, x_5 \vdash R(x_1, x_2) \land R(x_2, x_3) \land (R(x_3, x_4) \land R(x_4, x_5) \land x_1 = x_5$$
 \lstinputlisting[style=framed]{pr8.cql}
 \subsubsection{Program 9}
+$$x_1, x_2, x_3 \vdash S(x_1, x_2,x_3) \land (\exists z_1.\exists z_2 . S(z_1,z_2,z_3)) \land (\exists z_1.\exists z_2.S(z_1,z_2,z_3))$$
 \lstinputlisting[style=framed]{pr9.cql}
 \subsubsection{Program 10}
+$$x_1, x_2, x_3 \vdash S(x_1, x_2, x_3) \land (\exists z_1.\exists z_2.S(z_1,z_2,z_3)) \land (\exists z_1.\exists z_2.S(z_1,z_2,z_3))$$
 \lstinputlisting[style=framed]{pr10.cql}
