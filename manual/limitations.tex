@@ -1,0 +1,5 @@
+\section{Limitations}
+    \subsection{Variable Names}
+        To simplify the process of finding free variables for implied-equals queries, variable names are limited to positive integers.
+    \subsection{One Use Files}
+        When programs are read in a map is generated, where the keys are the file names and the values are a list of variables contained within that file. This was done as a performance improvement over using a list. The downside to this is that a file cannot be read in twice without the interpreter misbehaving. This was an oversight in the design process.
