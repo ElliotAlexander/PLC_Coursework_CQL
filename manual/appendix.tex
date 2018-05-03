@@ -27,7 +27,7 @@ $$x_1, x_2 \vdash \exists z_1.\exists z_2.R(x_1, z_1) \land R(z_1, z_2) \land R(
 $$x_1, x_2, x_3, x_4, x_5 \vdash R(x_1, x_2) \land R(x_2, x_3) \land (R(x_3, x_4) \land R(x_4, x_5) \land x_1 = x_5$$
 \lstinputlisting[style=framed]{pr8.cql}
 \subsubsection{Program 9}
-$$x_1, x_2, x_3 \vdash S(x_1, x_2,x_3) \land (\exists z_1.\exists z_2 . S(z_1,z_2,z_3)) \land (\exists z_1.\exists z_2.S(z_1,z_2,z_3))$$
+$$x_1, x_2, x_3 \vdash \exists z_1,z_2 A(x_1,z_1) \land B(z_1,z_2) \land C(z_2,x_2)$$
 \lstinputlisting[style=framed]{pr9.cql}
 \subsubsection{Program 10}
 $$x_1, x_2, x_3 \vdash S(x_1, x_2, x_3) \land (\exists z_1.\exists z_2.S(z_1,z_2,z_3)) \land (\exists z_1.\exists z_2.S(z_1,z_2,z_3))$$
